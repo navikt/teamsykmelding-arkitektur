@@ -1,10 +1,17 @@
 import { GithubWorkflowMetadata, Metadata, NaiseratorMetadata } from './types.ts'
 
-export function getApplicationName(metadata: Metadata[]): string {
+export function getApplicationName(metadata: Metadata[]): string | null {
     const names = new Set(metadata.filter(naiseratorMetadata).map((nais) => nais.name))
-    if (names.size !== 1) {
+    if (names.size === 0) {
+        console.log(
+            "Looks like this repo doesn't have any naiserator metadata, only github workflows, probably a naisjob",
+        )
+        return null
+    } else if (names.size !== 1) {
+        console.error('Wonky metadata:', metadata)
         throw new Error(`Expected exactly one application name, got ${names.size}`)
     }
+
     return names.values().next().value
 }
 
