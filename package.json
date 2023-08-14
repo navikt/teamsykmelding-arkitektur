@@ -3,21 +3,19 @@
     "module": "index.ts",
     "type": "module",
     "dependencies": {
+        "glob": "^10.3.3",
+        "js-yaml": "^4.1.0",
         "octokit": "^3.1.0",
         "simple-git": "^3.19.1"
     },
     "devDependencies": {
         "@navikt/eslint-config-teamsykmelding": "^3.0.0",
+        "@types/js-yaml": "^4.0.5",
         "bun-types": "latest",
         "prettier": "^3.0.1"
     },
     "peerDependencies": {
         "typescript": "^5.0.0"
     },
-    "prettier": "@navikt/eslint-config-teamsykmelding/prettier",
-    "eslintConfig": {
-        "extends": [
-            "@navikt/eslint-config-teamsykmelding"
-        ]
-    }
+    "prettier": "@navikt/eslint-config-teamsykmelding/prettier"
 }
