@@ -1,8 +1,18 @@
 import { getRepositories } from './github/repos'
-import { cloneOrPull } from './git/cloner'
+import { cloneOrPull, readCacheMetadata, updateCacheMetadata } from './git/cloner'
+import { buildDependencyGraph } from './dependency-graph/build.ts'
 
-const repositories = await getRepositories('teamsykmelding')
+if (Bun.argv.includes('--git')) {
+    console.info('--git flag found, cloning or pulling repositories')
 
-for (const repo of repositories) {
-    await cloneOrPull(repo)
+    const repositories = await getRepositories('teamsykmelding')
+
+    await Promise.all(repositories.map(cloneOrPull))
+    await updateCacheMetadata()
+} else {
+    const metadata = await readCacheMetadata()
+
+    console.info(`Using cache last updated ${new Date(metadata.timestamp).toISOString()}`)
 }
+
+await buildDependencyGraph({ cache: true })

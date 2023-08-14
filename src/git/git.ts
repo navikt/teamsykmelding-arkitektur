@@ -5,9 +5,7 @@ import simpleGit, { SimpleGit } from 'simple-git'
 export const gitOutputDir = path.join(process.cwd(), '.cache')
 
 if (!fs.existsSync(gitOutputDir)) {
-    fs.mkdirSync(gitOutputDir, {
-        recursive: true,
-    })
+    fs.mkdirSync(gitOutputDir, { recursive: true })
 }
 
 export const cloner = simpleGit({
