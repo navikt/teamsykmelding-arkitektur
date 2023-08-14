@@ -15,7 +15,7 @@ export type DepedencyNodeMetadata = {
 export type GithubWorkflowMetadata = {
     environments: string[]
     naiserators: string[]
-    isSharedWorkflow: true
+    isSharedWorkflow: boolean
 }
 
 export type NaiseratorMetadata = {

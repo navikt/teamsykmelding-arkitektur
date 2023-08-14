@@ -10,10 +10,12 @@ import { getApplicationName, getEnvironments, getMetadataForEnvironment } from '
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<void> {
     const folders = await fs.promises.readdir(gitOutputDir)
 
-    console.log(await extractMetadata(path.join(gitOutputDir, folders[1])))
+    const folder = folders[0]
+    console.log(folder)
+    console.log(await extractMetadata(path.join(gitOutputDir, folder)))
 }
 
-async function extractMetadata(repoDir: string): Promise<DepedencyNodeMetadata> {
+async function extractMetadata(repoDir: string): Promise<DepedencyNodeMetadata | null> {
     if (!(await fs.promises.exists(repoDir))) {
         throw new Error(`Unable to find repo ${repoDir}`)
     }
@@ -21,14 +23,24 @@ async function extractMetadata(repoDir: string): Promise<DepedencyNodeMetadata> 
     const relevantFiles = await glob(path.join(repoDir, '**/**/*.y*ml'), { dot: true })
     const parsedMetadata: Metadata[] = (await Promise.all(relevantFiles.map(parseYaml))).filter(notNull)
 
-    return buildMetadata(parsedMetadata)
+    try {
+        return buildMetadata(parsedMetadata)
+    } catch (e) {
+        console.error(new Error(`Unable to build metadata for ${repoDir}`, { cause: e }))
+        throw e
+    }
 }
 
-function buildMetadata(parsedMetadata: Metadata[]): DepedencyNodeMetadata {
+function buildMetadata(parsedMetadata: Metadata[]): DepedencyNodeMetadata | null {
     const environments = getEnvironments(parsedMetadata)
+    const applicationName = getApplicationName(parsedMetadata)
+
+    if (!applicationName) {
+        return null
+    }
 
     return {
-        application: getApplicationName(parsedMetadata),
+        application: applicationName,
         environments: environments.map(([env, naiserator]) => ({
             env: env,
             dependencies: getDependencies(getMetadataForEnvironment(parsedMetadata, naiserator)),
