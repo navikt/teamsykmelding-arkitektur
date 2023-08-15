@@ -1,38 +1,57 @@
+import * as R from 'remeda'
 import { gitOutputDir } from '../git/git.ts'
 import path from 'node:path'
 import * as fs from 'node:fs'
-import { glob } from 'glob'
 import { parseYaml } from './yaml/parser.ts'
 import { DepedencyNodeMetadata, Metadata, NaiseratorMetadata, NodeDependencies } from './types.ts'
 import { notNull } from '../utils.ts'
 import { getApplicationName, getEnvironments, getMetadataForEnvironment } from './metadata.ts'
+import { globDirForYaml } from './yaml/globber.ts'
+
+const appNameMapping: Record<string, string> = {
+    teamsykmelding: 'teamsykmelding-website',
+}
 
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<void> {
     const folders = await fs.promises.readdir(gitOutputDir)
 
-    // broken: 6, 8, 12
-    // demo apps: 9
-    const folder = folders[14]
-    console.log(folder)
-    const result = await extractMetadata(path.join(gitOutputDir, folder))
-    console.log(result)
+    const all = (
+        await Promise.all(
+            folders.map(
+                async (folder) =>
+                    await extractMetadata(path.join(gitOutputDir, folder), appNameMapping[folder] ?? folder),
+            ),
+        )
+    )
+        .flat()
+        .filter(notNull)
+    /*
+    const folder = folders[23]
+    console.log('folder:', folder)
+    const result = await extractMetadata(path.join(gitOutputDir, folder), appNameMapping[folder] ?? folder)
+    console.log('result:', result?.flat())
+     */
+
+    await Bun.write(path.join(gitOutputDir, 'graph.json'), JSON.stringify(all, null, 2))
 }
 
-async function extractMetadata(repoDir: string): Promise<DepedencyNodeMetadata | null> {
+async function extractMetadata(repoDir: string, appName: string): Promise<DepedencyNodeMetadata[] | null> {
     if (!(await fs.promises.exists(repoDir))) {
         throw new Error(`Unable to find repo ${repoDir}`)
     }
 
-    const relevantFiles = await glob(path.join(repoDir, '**/**/*.y*ml'), {
-        dot: true,
-        ignore: ['**/.yarn/**', '**/.yarnrc.yml'],
-    })
-    console.log(relevantFiles);
-    const parsedYamls = await Promise.all(relevantFiles.map(parseYaml))
-    const parsedMetadata: Metadata[] = parsedYamls.filter(notNull)
+    const relevantFiles = await globDirForYaml(repoDir)
+    const parsedMetadata = (await Promise.all(relevantFiles.map((it) => parseYaml(it, appName)))).flat().filter(notNull)
+
+    if (parsedMetadata.length === 0) {
+        console.debug(`${repoDir.split('/').slice(-1)} doesn't look like an app that deploys`)
+        return null
+    }
+
+    const metadataPerApp = R.groupBy(parsedMetadata, (it) => it.application)
 
     try {
-        return buildMetadata(parsedMetadata)
+        return Object.values(metadataPerApp).map(buildMetadata).filter(notNull)
     } catch (e) {
         console.error(new Error(`Unable to build metadata for ${repoDir}`, { cause: e }))
         throw e
@@ -49,10 +68,18 @@ function buildMetadata(parsedMetadata: Metadata[]): DepedencyNodeMetadata | null
 
     return {
         application: applicationName,
-        environments: environments.map(([env, naiserator]) => ({
-            env: env,
-            dependencies: getDependencies(getMetadataForEnvironment(parsedMetadata, naiserator)),
-        })),
+        environments: environments
+            .map(([env, naiserator]) => {
+                const metadataForEnvironment = getMetadataForEnvironment(parsedMetadata, naiserator)
+
+                if (!metadataForEnvironment) return null
+
+                return {
+                    env: env,
+                    dependencies: getDependencies(metadataForEnvironment),
+                }
+            })
+            .filter(notNull),
     }
 }
 

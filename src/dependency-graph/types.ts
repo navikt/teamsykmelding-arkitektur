@@ -13,14 +13,15 @@ export type DepedencyNodeMetadata = {
 }
 
 export type GithubWorkflowMetadata = {
+    application: string
     environments: string[]
     naiserators: string[]
     isSharedWorkflow: boolean
 }
 
 export type NaiseratorMetadata = {
+    application: string
     file: string
-    name: string
     namespace: string
     inbound: ({ application: string } | { application: string; namespace: string; cluster: string })[]
     outbound: ({ application: string } | { application: string; namespace: string; cluster: string })[]

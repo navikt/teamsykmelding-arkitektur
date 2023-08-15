@@ -1,6 +1,14 @@
 import { octokit } from './octokit'
 
-const blacklist = ['vault-iac', 'aad-iac', 'syfo-generator-ktor']
+const blacklist = [
+    'vault-iac',
+    'aad-iac',
+    'syfo-generator-ktor',
+    // Un-blacklist this when parsing is up to speed
+    'syfohelsenettproxy',
+    // hmm
+    'teamsykmelding-pik',
+]
 
 const teamReposQuery = /* GraphQL */ `
     query OurRepos {
@@ -19,7 +27,7 @@ const teamReposQuery = /* GraphQL */ `
 
 export async function getRepositories(team: string): Promise<string[]> {
     if (Bun.env.GH_TOKEN == null) {
-        console.error("GH_TOKEN not set")
+        console.error('GH_TOKEN not set')
         process.exit(1)
     }
 
