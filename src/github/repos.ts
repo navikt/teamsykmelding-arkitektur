@@ -18,6 +18,11 @@ const teamReposQuery = /* GraphQL */ `
 `
 
 export async function getRepositories(team: string): Promise<string[]> {
+    if (Bun.env.GH_TOKEN == null) {
+        console.error("GH_TOKEN not set")
+        process.exit(1)
+    }
+
     console.info(`Getting repositories for team ${team}`)
 
     const repoes = ((await octokit.graphql(teamReposQuery)) as any).organization.team.repositories.nodes

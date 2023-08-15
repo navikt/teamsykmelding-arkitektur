@@ -11,7 +11,14 @@ export async function updateCacheMetadata(): Promise<void> {
 }
 
 export async function readCacheMetadata(): Promise<{ timestamp: number }> {
-    return await Bun.file(path.join(gitOutputDir, 'cache.json')).json()
+    const file = Bun.file(path.join(gitOutputDir, 'cache.json'));
+
+    if (!(await file.exists())) {
+        console.error('Cache metadata does not exist, run with --git flag first')
+        process.exit(1)
+    }
+
+    return await file.json()
 }
 
 async function clone(repo: string) {
