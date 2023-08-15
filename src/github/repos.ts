@@ -1,6 +1,6 @@
 import { octokit } from './octokit'
 
-const blacklist = ['vault-iac', 'aad-iac']
+const blacklist = ['vault-iac', 'aad-iac', 'syfo-generator-ktor']
 
 const teamReposQuery = /* GraphQL */ `
     query OurRepos {

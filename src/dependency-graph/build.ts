@@ -10,9 +10,12 @@ import { getApplicationName, getEnvironments, getMetadataForEnvironment } from '
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<void> {
     const folders = await fs.promises.readdir(gitOutputDir)
 
-    const folder = folders[0]
+    // broken: 6, 8, 12
+    // demo apps: 9
+    const folder = folders[14]
     console.log(folder)
-    console.log(await extractMetadata(path.join(gitOutputDir, folder)))
+    const result = await extractMetadata(path.join(gitOutputDir, folder))
+    console.log(result)
 }
 
 async function extractMetadata(repoDir: string): Promise<DepedencyNodeMetadata | null> {
@@ -20,8 +23,13 @@ async function extractMetadata(repoDir: string): Promise<DepedencyNodeMetadata |
         throw new Error(`Unable to find repo ${repoDir}`)
     }
 
-    const relevantFiles = await glob(path.join(repoDir, '**/**/*.y*ml'), { dot: true })
-    const parsedMetadata: Metadata[] = (await Promise.all(relevantFiles.map(parseYaml))).filter(notNull)
+    const relevantFiles = await glob(path.join(repoDir, '**/**/*.y*ml'), {
+        dot: true,
+        ignore: ['**/.yarn/**', '**/.yarnrc.yml'],
+    })
+    console.log(relevantFiles);
+    const parsedYamls = await Promise.all(relevantFiles.map(parseYaml))
+    const parsedMetadata: Metadata[] = parsedYamls.filter(notNull)
 
     try {
         return buildMetadata(parsedMetadata)

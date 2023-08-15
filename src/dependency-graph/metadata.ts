@@ -1,3 +1,5 @@
+import * as R from 'remeda'
+
 import { GithubWorkflowMetadata, Metadata, NaiseratorMetadata } from './types.ts'
 
 export function getApplicationName(metadata: Metadata[]): string | null {
@@ -16,15 +18,23 @@ export function getApplicationName(metadata: Metadata[]): string | null {
 }
 
 export function getEnvironments(metadata: Metadata[]): [env: string, naiserator: string][] {
-    const firstWorkflow = metadata.filter(githubWorkflowMetadata).find((workflow) => {
-        return workflow.environments.length > 0
-    })
+    const allEnvironments: [env: string, naiserator: string][] = R.pipe(
+        metadata,
+        R.filter(githubWorkflowMetadata),
+        R.flatMap((metadata) =>
+            metadata.environments.map((it, index): [env: string, naiserator: string] => [
+                it,
+                metadata.naiserators[index],
+            ]),
+        ),
+        R.uniqBy(([env, naiserator]) => `${env}-${naiserator}`),
+    )
 
-    if (!firstWorkflow) {
+    if (!allEnvironments.length) {
         throw new Error(`Unable to find any workflows with environments`)
     }
 
-    return firstWorkflow.environments.map((it, index) => [it, firstWorkflow.naiserators[0]])
+    return allEnvironments
 }
 
 export function getMetadataForEnvironment(parsedMetadata: Metadata[], naiserator: string) {
