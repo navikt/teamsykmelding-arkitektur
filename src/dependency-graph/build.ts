@@ -12,27 +12,35 @@ const appNameMapping: Record<string, string> = {
     teamsykmelding: 'teamsykmelding-website',
 }
 
-export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<void> {
-    const folders = await fs.promises.readdir(gitOutputDir)
+export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<DepedencyNodeMetadata[]> {
+    if (!cache) {
+        const folders = await fs.promises.readdir(gitOutputDir)
 
-    const all = (
-        await Promise.all(
-            folders.map(
-                async (folder) =>
-                    await extractMetadata(path.join(gitOutputDir, folder), appNameMapping[folder] ?? folder),
-            ),
+        const all = (
+            await Promise.all(
+                folders.map(
+                    async (folder) =>
+                        await extractMetadata(path.join(gitOutputDir, folder), appNameMapping[folder] ?? folder),
+                ),
+            )
         )
-    )
-        .flat()
-        .filter(notNull)
-    /*
-    const folder = folders[23]
-    console.log('folder:', folder)
-    const result = await extractMetadata(path.join(gitOutputDir, folder), appNameMapping[folder] ?? folder)
-    console.log('result:', result?.flat())
-     */
+            .flat()
+            .filter(notNull)
 
-    await Bun.write(path.join(gitOutputDir, 'graph.json'), JSON.stringify(all, null, 2))
+        await Bun.write(path.join(gitOutputDir, 'graph.json'), JSON.stringify(all, null, 2))
+
+        return all
+    } else {
+        // generate mermaid using cache
+        const bunFile = Bun.file(path.join(gitOutputDir, 'graph.json'))
+
+        if (!(await bunFile.exists())) {
+            console.error('Cache metadata does not exist, run without --cache flag first')
+            process.exit(1)
+        }
+
+        return await bunFile.json<DepedencyNodeMetadata[]>()
+    }
 }
 
 async function extractMetadata(repoDir: string, appName: string): Promise<DepedencyNodeMetadata[] | null> {
