@@ -27,8 +27,14 @@ export type AppMetadata = {
     }
 }
 
+export type TopicDependency = { application: string; namespace: string }
+
 export type TopicMetadata = {
     type: 'topic'
     topic: string
     namespace: string
+    dependencies: {
+        write: TopicDependency[]
+        read: TopicDependency[]
+    }
 }

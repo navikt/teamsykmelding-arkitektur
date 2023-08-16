@@ -9,7 +9,8 @@ import { GithubAction, NaisApplication, NaisOther, NaisTopic, parseYaml, Working
 import { globDirForYaml } from './yaml/globber.ts'
 import { EnvironmentNaisFileTuple, getEnvironmentNaisTuple } from './github.ts'
 import { NaisSchema } from './yaml/schemas/nais-schema.ts'
-import { AppMetadata, IngressMetadata, TopicMetadata } from './types.ts'
+import { AppMetadata, IngressMetadata, TopicDependency, TopicMetadata } from './types.ts'
+import { NaisTopicSchema } from './yaml/schemas/nais-topic-schema.ts'
 
 export async function analyzeApp(repoDir: string): Promise<[string, AppMetadata | TopicMetadata][]> {
     const dir = path.join(gitOutputDir, repoDir)
@@ -80,6 +81,7 @@ function createAppMetadataForEnv(
             type: 'topic',
             topic: naisApp.topic.metadata.name,
             namespace: naisApp.topic.metadata.namespace,
+            dependencies: createTopicDependencies(naisApp.topic.spec),
         } satisfies TopicMetadata
     }
 
@@ -97,6 +99,16 @@ function createAppMetadataForEnv(
             })) ?? null,
         dependencies: createApplicationDependencies(application.spec.accessPolicy),
     } satisfies AppMetadata
+}
+
+function createTopicDependencies(spec: NaisTopicSchema['spec']) {
+    const toTopicDependency = (it: (typeof spec)['acl'][number]) =>
+        ({ application: it.application, namespace: it.team }) satisfies TopicDependency
+
+    return {
+        read: spec.acl.filter((it) => it.access.includes('read')).map(toTopicDependency) ?? [],
+        write: spec.acl.filter((it) => it.access.includes('read')).map(toTopicDependency) ?? [],
+    }
 }
 
 function createApplicationDependencies(accessPolicy: NaisSchema['spec']['accessPolicy']): AppMetadata['dependencies'] {
