@@ -1,4 +1,11 @@
-import { AppMetadata, DatabaseMetadata, DependencyGraphEnvironment, TopicMetadata } from '../dependency-graph/types.ts'
+import * as R from 'remeda'
+import {
+    AppDependency,
+    AppMetadata,
+    DatabaseMetadata,
+    DependencyGraphEnvironment,
+    TopicMetadata,
+} from '../dependency-graph/types.ts'
 import { raise } from '../utils.ts'
 
 export function buildMermaid(graph: DependencyGraphEnvironment): string {
@@ -14,6 +21,7 @@ export function buildMermaid(graph: DependencyGraphEnvironment): string {
 
     const baseTopicNodes = graph.topics.map(createTopicNode).join('\n    ')
     const topicConnections = graph.topics.map(createTopicConnections).join('\n    ')
+    const otherTeamsNodes = createOtherTeamsNodes(graph)
 
     const users = `
     internal-users>Internal users]
@@ -30,6 +38,7 @@ export function buildMermaid(graph: DependencyGraphEnvironment): string {
     ${ingressConnections}
     ${outboundConnections}
     ${topicConnections}
+    ${otherTeamsNodes}
 `
 }
 
@@ -82,6 +91,7 @@ function createSidecarNodes(app: AppMetadata) {
 function createOutboundConnections(app: AppMetadata) {
     return `
     ${app.dependencies.outbound.map((it) => `${app.app}-app --> ${it.application}-app`).join('\n    ')}
+    ${app.dependencies.inbound.map((it) => `${it.application}-app --> ${app.app}-app`).join('\n    ')}
 `
 }
 
@@ -94,4 +104,35 @@ function createDatabaseNode(parent: string, databases: { name: string; databases
     ${parent}-app --> ${parent}-${db.name}`
 
     return databases?.map(dbNode).join('\n    ') || ''
+}
+
+function createOtherTeamsNodes(graph: DependencyGraphEnvironment) {
+    const otherAppDeps = graph.applications
+        .flatMap((it) => [...it.dependencies.outbound, ...it.dependencies.inbound])
+        .filter((it): it is AppDependency => 'namespace' in it)
+        .filter((it) => it.namespace !== 'teamsykmelding')
+
+    const otherTopicDeps = graph.topics
+        .flatMap((it) => [...it.dependencies.read, ...it.dependencies.write])
+        .filter((it) => it.namespace !== 'teamsykmelding')
+
+    const otherApps = R.pipe(
+        [
+            ...otherAppDeps.map((it) => [it.namespace, it.application]),
+            ...otherTopicDeps.map((it) => [it.namespace, it.application]),
+        ],
+        R.groupBy(([namespace]) => namespace),
+        R.mapValues((it) => it.map(([, app]) => app)),
+        R.toPairs,
+    )
+
+    return otherApps
+        .map(
+            ([namespace, apps]) => `
+    subgraph ${namespace}[${namespace}]
+    direction TB
+    ${apps.map((app) => `${app}-app[${app}]`).join('\n    ')}
+    end`,
+        )
+        .join('\n    ')
 }

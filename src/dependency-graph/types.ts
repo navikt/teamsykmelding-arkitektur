@@ -14,6 +14,10 @@ export type DatabaseMetadata = { name: string; databases: string[] }
 
 export type IngressMetadata = { ingress: string; wonderwall: 'azure' | 'idporten' | null }
 
+export type AppDependency = { application: string; namespace: string; cluster: string }
+
+export type InterTeamAppDependency = { application: string }
+
 export type AppMetadata = {
     type: 'app'
     app: string
@@ -21,8 +25,8 @@ export type AppMetadata = {
     ingress: IngressMetadata | null
     databases: DatabaseMetadata[] | null
     dependencies: {
-        inbound: ({ application: string } | { application: string; namespace: string; cluster: string })[]
-        outbound: ({ application: string } | { application: string; namespace: string; cluster: string })[]
+        inbound: (InterTeamAppDependency | AppDependency)[]
+        outbound: (InterTeamAppDependency | AppDependency)[]
         external: { host: string }[]
     }
 }

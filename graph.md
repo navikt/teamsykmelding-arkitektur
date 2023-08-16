@@ -492,13 +492,17 @@ flowchart LR
         internal-users --> syk-dig-azure-sidecar
 
     syfosmmanuell-backend-app --> syfo-tilgangskontroll-app
+    syfosminfotrygd-app --> syfosmmanuell-backend-app
+    syfosmmanuell-app --> syfosmmanuell-backend-app
 
 
     smregistrering-app --> smregistrering-backend-app
 
 
+
     syfosmpapirmottak-app --> syfosmpapirregler-app
     syfosmpapirmottak-app --> smtss-app
+
 
 
     syfosmmottak-app --> syfosmregler-app
@@ -506,17 +510,22 @@ flowchart LR
     syfosmmottak-app --> smtss-app
 
 
+
     macgyver-frontend-app --> macgyver-app
 
 
+
     macgyver-app --> narmesteleder-app
+    macgyver-frontend-app --> macgyver-app
 
 
     sparenaproxy-app --> syfosmregister-app
     sparenaproxy-app --> flex-syketilfelle-app
 
 
+
     syk-dig-backend-app --> syfo-tilgangskontroll-app
+    syk-dig-app --> syk-dig-backend-app
 
 
     pale-2-app --> pale-2-regler-app
@@ -524,26 +533,45 @@ flowchart LR
     pale-2-app --> smtss-app
 
 
+
     sykmeldinger-app --> sykmeldinger-backend-app
     sykmeldinger-app --> flex-syketilfelle-app
     sykmeldinger-app --> nav-dekoratoren-app
 
 
+
     syfosmpapirregler-app --> syfosmregister-app
     syfosmpapirregler-app --> flex-syketilfelle-app
+    syfosmpapirmottak-app --> syfosmpapirregler-app
+    smregistrering-backend-app --> syfosmpapirregler-app
 
 
     dinesykmeldte-app --> dinesykmeldte-backend-app
     dinesykmeldte-app --> nav-dekoratoren-app
 
 
+
     syfosmarena-app --> smtss-app
 
 
+
     syfosmregister-app --> syfo-tilgangskontroll-app
+    syfomodiaperson-app --> syfosmregister-app
+    syfomodiaperson-app --> syfosmregister-app
+    esyfovarsel-app --> syfosmregister-app
+    esyfovarsel-app --> syfosmregister-app
+    sparenaproxy-app --> syfosmregister-app
+    syfosmregler-app --> syfosmregister-app
+    syfosmpapirregler-app --> syfosmregister-app
+    smregistrering-backend-app --> syfosmregister-app
+    syfosminfotrygd-app --> syfosmregister-app
+    smoppslag-app --> syfosmregister-app
+    syfooppfolgingsplanservice-app --> syfosmregister-app
+    macgyver-app --> syfosmregister-app
 
 
     pale-2-sak-app --> pale-2-pdfgen-app
+
 
 
     syfosminfotrygd-app --> syfosmmanuell-backend-app
@@ -551,32 +579,42 @@ flowchart LR
     syfosminfotrygd-app --> flex-syketilfelle-app
 
 
+
     syfosmmanuell-app --> syfosmmanuell-backend-app
+
 
 
     dinesykmeldte-kafka-app --> flex-syketilfelle-app
 
 
+
     syfosmregler-app --> syfosmregister-app
     syfosmregler-app --> flex-syketilfelle-app
+    syfosmmottak-app --> syfosmregler-app
 
 
     sykmeldinger-arbeidsgiver-app --> narmesteleder-app
+    oppfolgingsplan-frontend-app --> sykmeldinger-arbeidsgiver-app
+    dialogmote-frontend-app --> sykmeldinger-arbeidsgiver-app
 
 
     syfosmaltinn-app --> smarbeidsgiver-pdfgen-app
+
 
 
     smregistrering-backend-app --> syfosmregister-app
     smregistrering-backend-app --> syfosmpapirregler-app
     smregistrering-backend-app --> smtss-app
     smregistrering-backend-app --> syfo-tilgangskontroll-app
+    smregistrering-app --> smregistrering-backend-app
 
 
     syk-dig-app --> syk-dig-backend-app
 
 
+
     syfosmsak-app --> smpdfgen-app
+
 
 
     omrade-helse-etterlevelse-topic --> spydig-app
@@ -822,5 +860,128 @@ flowchart LR
     pale-2-register-app --> legeerklaering-topic
     k143566-app --> legeerklaering-topic
     isbehandlerdialog-app --> legeerklaering-topic
+
+    subgraph teamsykefravr[teamsykefravr]
+    direction TB
+    syfo-tilgangskontroll-app[syfo-tilgangskontroll]
+    isdialogmote-app[isdialogmote]
+    isbehandlerdialog-app[isbehandlerdialog]
+    syfo-tilgangskontroll-app[syfo-tilgangskontroll]
+    syfo-tilgangskontroll-app[syfo-tilgangskontroll]
+    syfomodiaperson-app[syfomodiaperson]
+    syfomodiaperson-app[syfomodiaperson]
+    padm2-app[padm2]
+    syfo-tilgangskontroll-app[syfo-tilgangskontroll]
+    isnarmesteleder-app[isnarmesteleder]
+    isnarmesteleder-app[isnarmesteleder]
+    isdialogmelding-app[isdialogmelding]
+    isdialogmelding-app[isdialogmelding]
+    isdialogmelding-app[isdialogmelding]
+    isdialogmelding-app[isdialogmelding]
+    isoppfolgingstilfelle-app[isoppfolgingstilfelle]
+    isoppfolgingstilfelle-app[isoppfolgingstilfelle]
+    isbehandlerdialog-app[isbehandlerdialog]
+    isbehandlerdialog-app[isbehandlerdialog]
+    end
+
+    subgraph nais-system[nais-system]
+    direction TB
+    clamav-app[clamav]
+    clamav-app[clamav]
+    end
+
+    subgraph team-esyfo[team-esyfo]
+    direction TB
+    syfobrukertilgang-app[syfobrukertilgang]
+    syfobrukertilgang-app[syfobrukertilgang]
+    syfooppfolgingsplanservice-app[syfooppfolgingsplanservice]
+    esyfovarsel-app[esyfovarsel]
+    esyfovarsel-app[esyfovarsel]
+    esyfovarsel-app[esyfovarsel]
+    syfooppfolgingsplanservice-app[syfooppfolgingsplanservice]
+    oppfolgingsplan-frontend-app[oppfolgingsplan-frontend]
+    dialogmote-frontend-app[dialogmote-frontend]
+    end
+
+    subgraph fager[fager]
+    direction TB
+    notifikasjon-bruker-api-app[notifikasjon-bruker-api]
+    notifikasjon-bruker-api-writer-app[notifikasjon-bruker-api-writer]
+    min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
+    notifikasjon-bruker-api-writer-app[notifikasjon-bruker-api-writer]
+    min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
+    min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
+    min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
+    end
+
+    subgraph flex[flex]
+    direction TB
+    ditt-sykefravaer-app[ditt-sykefravaer]
+    flex-syketilfelle-app[flex-syketilfelle]
+    flex-syketilfelle-app[flex-syketilfelle]
+    flex-syketilfelle-app[flex-syketilfelle]
+    flex-syketilfelle-app[flex-syketilfelle]
+    flex-syketilfelle-app[flex-syketilfelle]
+    ditt-sykefravaer-app[ditt-sykefravaer]
+    sykepengesoknad-app[sykepengesoknad]
+    flex-syketilfelle-app[flex-syketilfelle]
+    sykepengesoknad-narmesteleder-varsler-app[sykepengesoknad-narmesteleder-varsler]
+    sykepengesoknad-ikke-sendt-altinnvarsel-app[sykepengesoknad-ikke-sendt-altinnvarsel]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    sykepengesoknad-narmesteleder-varsler-app[sykepengesoknad-narmesteleder-varsler]
+    sykepengesoknad-ikke-sendt-altinnvarsel-app[sykepengesoknad-ikke-sendt-altinnvarsel]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    flex-syketilfelle-app[flex-syketilfelle]
+    sykepengesoknad-altinn-app[sykepengesoknad-altinn]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    flex-syketilfelle-app[flex-syketilfelle]
+    sykepengesoknad-altinn-app[sykepengesoknad-altinn]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    flex-syketilfelle-app[flex-syketilfelle]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    flex-syketilfelle-app[flex-syketilfelle]
+    flex-syketilfelle-app[flex-syketilfelle]
+    flex-syketilfelle-app[flex-syketilfelle]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    end
+
+    subgraph personbruker[personbruker]
+    direction TB
+    nav-dekoratoren-app[nav-dekoratoren]
+    nav-dekoratoren-app[nav-dekoratoren]
+    end
+
+    subgraph risk[risk]
+    direction TB
+    smoppslag-app[smoppslag]
+    end
+
+    subgraph tbd[tbd]
+    direction TB
+    spydig-app[spydig]
+    spydig-app[spydig]
+    end
+
+    subgraph default[default]
+    direction TB
+    syfoservicestrangler-app[syfoservicestrangler]
+    syfoservicestrangler-app[syfoservicestrangler]
+    end
+
+    subgraph disykefravar[disykefravar]
+    direction TB
+    dvh-sykm-konsument-app[dvh-sykm-konsument]
+    dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
+    dvh-sykm-konsument-app[dvh-sykm-konsument]
+    dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
+    dvh-sykm-konsument-app[dvh-sykm-konsument]
+    dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
+    dvh-sykm-konsument-app[dvh-sykm-konsument]
+    dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
+    end
 
 ```
