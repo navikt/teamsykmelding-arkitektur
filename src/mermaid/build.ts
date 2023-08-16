@@ -1,4 +1,4 @@
-import { AppMetadata, DatabaseMetadata, DependencyGraphEnvironment } from '../dependency-graph/types.ts'
+import { AppMetadata, DatabaseMetadata, DependencyGraphEnvironment, TopicMetadata } from '../dependency-graph/types.ts'
 import { raise } from '../utils.ts'
 
 export function buildMermaid(graph: DependencyGraphEnvironment): string {
@@ -12,6 +12,9 @@ export function buildMermaid(graph: DependencyGraphEnvironment): string {
         .map(createIngressConnections)
         .join('\n    ')
 
+    const baseTopicNodes = graph.topics.map(createTopicNode).join('\n    ')
+    const topicConnections = graph.topics.map(createTopicConnections).join('\n    ')
+
     const users = `
     internal-users>Internal users]
     external-users>External users]
@@ -20,8 +23,13 @@ export function buildMermaid(graph: DependencyGraphEnvironment): string {
     return `flowchart LR
     ${users}
     ${baseNodes}
+    subgraph topics
+    direction TB
+    ${baseTopicNodes}
+    end
     ${ingressConnections}
     ${outboundConnections}
+    ${topicConnections}
 `
 }
 
@@ -44,6 +52,21 @@ function createAppSubGraph(app: AppMetadata) {
     ${createDatabaseNode(app.app, app.databases)}
     ${createSidecarNodes(app)}
     end`
+}
+
+function createTopicNode(topic: TopicMetadata) {
+    return `
+    ${topic.topic}-topic[${topic.topic}]
+`
+}
+
+function createTopicConnections(topic: TopicMetadata) {
+    const read = topic.dependencies.read.map((it) => `${topic.topic}-topic --> ${it.application}-app`).join('\n    ')
+    const write = topic.dependencies.write.map((it) => `${it.application}-app --> ${topic.topic}-topic`).join('\n    ')
+
+    return `
+    ${read}
+    ${write}`
 }
 
 function createSidecarNodes(app: AppMetadata) {
