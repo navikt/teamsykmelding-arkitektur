@@ -4,10 +4,8 @@ const blacklist = [
     'vault-iac',
     'aad-iac',
     'syfo-generator-ktor',
-    // Un-blacklist this when parsing is up to speed
-    'syfohelsenettproxy',
-    // hmm
-    'teamsykmelding-pik',
+    // Has a lot of workflows that confuses the parsing
+    'teamsykmelding-github-actions-workflows',
 ]
 
 const teamReposQuery = /* GraphQL */ `
