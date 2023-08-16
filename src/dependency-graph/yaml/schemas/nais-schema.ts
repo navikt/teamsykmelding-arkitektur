@@ -1,15 +1,15 @@
 /**
- * Naisjob defines a NAIS Naisjob.
+ * Application defines a NAIS application.
  */
 export interface NaisSchema {
     /**
      * APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
      */
-    apiVersion: 'nais.io/v1'
+    apiVersion: 'nais.io/v1alpha1'
     /**
      * Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
      */
-    kind: 'Naisjob'
+    kind: 'Application'
     /**
      * ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.
      */
@@ -148,11 +148,11 @@ export interface NaisSchema {
         uid?: string
     }
     /**
-     * NaisjobSpec contains the NAIS manifest. Please keep this list sorted for clarity.
+     * ApplicationSpec contains the NAIS manifest. Please keep this list sorted for clarity.
      */
     spec: {
         /**
-         * By default, no traffic is allowed between naisjobs inside the cluster. Configure access policies to explicitly allow communication between naisjobs. This is also used for granting inbound access in the context of Azure AD and TokenX clients.
+         * By default, no traffic is allowed between applications inside the cluster. Configure access policies to explicitly allow communication between applications. This is also used for granting inbound access in the context of Azure AD and TokenX clients.
          */
         accessPolicy?: {
             /**
@@ -241,10 +241,6 @@ export interface NaisSchema {
             }
         }
         /**
-         * Once a Naisjob reaches activeDeadlineSeconds, all of its running Pods are terminated and the Naisjob status will become type: Failed with reason: DeadlineExceeded. If set, this takes presedence over BackoffLimit.
-         */
-        activeDeadlineSeconds?: number
-        /**
          * Provisions and configures Azure resources.
          */
         azure?: {
@@ -293,23 +289,48 @@ export interface NaisSchema {
                  */
                 tenant?: 'nav.no' | 'trygdeetaten.no'
             }
+            /**
+             * Sidecar configures a sidecar that intercepts every HTTP request, and performs the OIDC flow if necessary. All requests to ingress + `/oauth2` will be processed only by the sidecar, whereas all other requests will be proxied to the application.
+             *  If the client is authenticated with Azure AD, the `Authorization` header will be set to `Bearer <JWT>`.
+             */
+            sidecar?: {
+                /**
+                 * Automatically redirect the user to login for all proxied GET requests.
+                 */
+                autoLogin?: boolean
+                /**
+                 * Comma separated list of absolute paths to ignore when auto-login is enabled.
+                 */
+                autoLoginIgnorePaths?: string[]
+                /**
+                 * Enable the sidecar.
+                 */
+                enabled: boolean
+                /**
+                 * Resource requirements for the sidecar container.
+                 */
+                resources?: {
+                    /**
+                     * Limit defines the maximum amount of resources a container can use before getting evicted.
+                     */
+                    limits?: {
+                        cpu?: string
+                        memory?: string
+                    }
+                    /**
+                     * Request defines the amount of resources a container is allocated on startup.
+                     */
+                    requests?: {
+                        cpu?: string
+                        memory?: string
+                    }
+                }
+            }
         }
-        /**
-         * Specify the number of retries before considering a Naisjob as failed
-         */
-        backoffLimit?: number
         /**
          * Override command when starting Docker image.
          */
         command?: string[]
-        /**
-         * A Job tracks the successful completions. When a specified number of successful completions is reached, the task (ie, Job) is complete.
-         */
-        completions?: number
-        /**
-         * Specifies how to treat concurrent executions of a job that is created by this Naisjob-cron.
-         */
-        concurrencyPolicy?: 'Forbid' | 'Replace' | 'Allow'
         /**
          * Custom environment variables injected into your container. Specify either `value` or `valueFrom`, but not both.
          */
@@ -349,7 +370,7 @@ export interface NaisSchema {
         /**
          * EnvFrom exposes all variables in the ConfigMap or Secret resources as environment variables. One of `configMap` or `secret` is required.
          *  Environment variables will take the form `KEY=VALUE`, where `key` is the ConfigMap or Secret key. You can specify as many keys as you like in a single ConfigMap or Secret.
-         *  The ConfigMap and Secret resources must live in the same Kubernetes namespace as the Naisjob resource.
+         *  The ConfigMap and Secret resources must live in the same Kubernetes namespace as the Application resource.
          */
         envFrom?: {
             /**
@@ -363,13 +384,10 @@ export interface NaisSchema {
             [k: string]: unknown
         }[]
         /**
-         * Specify how many failed Jobs should be kept.
-         */
-        failedJobsHistoryLimit?: number
-        /**
-         * List of ConfigMap or Secret resources that will have their contents mounted into the containers as files. Either `configMap` or `secret` is required.
+         * List of ConfigMap, Secret, or EmptyDir resources that will have their contents mounted into the containers. Either `configMap`, `secret`, or `emptyDir` is required.
          *  Files will take the path `<mountPath>/<key>`, where `key` is the ConfigMap or Secret key. You can specify as many keys as you like in a single ConfigMap or Secret, and they will all be mounted to the same directory.
-         *  The ConfigMap and Secret resources must live in the same Kubernetes namespace as the Naisjob resource.
+         *  If you reference an emptyDir you will just get an empty directory, backed by your requested memory or the disk on the node where your pod is running.
+         *  The ConfigMap and Secret resources must live in the same Kubernetes namespace as the Application resource.
          */
         filesFrom?: {
             /**
@@ -398,6 +416,17 @@ export interface NaisSchema {
             secret?: string
             [k: string]: unknown
         }[]
+        /**
+         * Configuration options specifically for frontend applications.
+         */
+        frontend?: {
+            generatedConfig?: {
+                /**
+                 * If specified, a Javascript file with application specific frontend configuration variables will be generated and mounted into the pod file system at the specified path. You can import this file directly from your Javascript application.
+                 */
+                mountPath: string
+            }
+        }
         gcp?: {
             /**
              * Provision BigQuery datasets and give your application's pod mountable secrets for connecting to each dataset. Datasets are immutable and cannot be changed.
@@ -622,11 +651,101 @@ export interface NaisSchema {
             }[]
         }
         /**
-         * Your Naisjob's Docker image location and tag.
+         * Configures an ID-porten client for this application. See [ID-porten](https://doc.nais.io/security/auth/idporten/) for more details.
+         */
+        idporten?: {
+            /**
+             * AccessTokenLifetime is the lifetime in seconds for any issued access token from ID-porten.
+             *  If unspecified, defaults to `3600` seconds (1 hour).
+             */
+            accessTokenLifetime?: number
+            /**
+             * ClientURI is the URL shown to the user at ID-porten when displaying a 'back' button or on errors.
+             */
+            clientURI?: string
+            /**
+             * Whether to enable provisioning of an ID-porten client. If enabled, an ID-porten client be provisioned.
+             */
+            enabled: boolean
+            /**
+             * FrontchannelLogoutPath is a valid path for your application where ID-porten sends a request to whenever the user has initiated a logout elsewhere as part of a single logout (front channel logout) process.
+             */
+            frontchannelLogoutPath?: string
+            /**
+             * IntegrationType is used to make sensible choices for your client. Which type of integration you choose will provide guidance on which scopes you can use with the client. A client can only have one integration type.
+             *  NB! It is not possible to change the integration type after creation.
+             */
+            integrationType?: 'krr' | 'idporten' | 'api_klient'
+            /**
+             * PostLogoutRedirectURIs are valid URIs that ID-porten will allow redirecting the end-user to after a single logout has been initiated and performed by the application.
+             */
+            postLogoutRedirectURIs?: string[]
+            /**
+             * RedirectPath is a valid path that ID-porten redirects back to after a successful authorization request.
+             */
+            redirectPath?: string
+            /**
+             * Register different oauth2 Scopes on your client. You will not be able to add a scope to your client that conflicts with the client's IntegrationType. For example, you can not add a scope that is limited to the IntegrationType `krr` of IntegrationType `idporten`, and vice versa.
+             *  Default for IntegrationType `krr` = ("krr:global/kontaktinformasjon.read", "krr:global/digitalpost.read") Default for IntegrationType `idporten` = ("openid", "profile") IntegrationType `api_klient` have no Default, checkout Digdir documentation.
+             */
+            scopes?: string[]
+            /**
+             * SessionLifetime is the maximum lifetime in seconds for any given user's session in your application. The timeout starts whenever the user is redirected from the `authorization_endpoint` at ID-porten.
+             *  If unspecified, defaults to `7200` seconds (2 hours). Note: Attempting to refresh the user's `access_token` beyond this timeout will yield an error.
+             */
+            sessionLifetime?: number
+            /**
+             * Sidecar configures a sidecar that intercepts every HTTP request, and performs the OIDC flow if necessary. All requests to ingress + `/oauth2` will be processed only by the sidecar, whereas all other requests will be proxied to the application.
+             *  If the client is authenticated with IDPorten, the `Authorization` header will be set to `Bearer <JWT>`.
+             */
+            sidecar?: {
+                /**
+                 * Automatically redirect the user to login for all proxied GET requests.
+                 */
+                autoLogin?: boolean
+                /**
+                 * Comma separated list of absolute paths to ignore when auto-login is enabled.
+                 */
+                autoLoginIgnorePaths?: string[]
+                /**
+                 * Enable the sidecar.
+                 */
+                enabled: boolean
+                /**
+                 * Default security level for all authentication requests.
+                 */
+                level?: 'Level3' | 'Level4' | 'idporten-loa-substantial' | 'idporten-loa-high'
+                /**
+                 * Default user interface locale for all authentication requests.
+                 */
+                locale?: 'nb' | 'nn' | 'en' | 'se'
+                /**
+                 * Resource requirements for the sidecar container.
+                 */
+                resources?: {
+                    /**
+                     * Limit defines the maximum amount of resources a container can use before getting evicted.
+                     */
+                    limits?: {
+                        cpu?: string
+                        memory?: string
+                    }
+                    /**
+                     * Request defines the amount of resources a container is allocated on startup.
+                     */
+                    requests?: {
+                        cpu?: string
+                        memory?: string
+                    }
+                }
+            }
+        }
+        /**
+         * Your application's Docker image location and tag.
          */
         image: string
         /**
-         * An Influxdb via Aiven. A typical use case is to store metrics from your application and visualize them in Grafana. See [navikt/aiven-iac](https://github.com/navikt/aiven-iac) repository
+         * An InfluxDB via Aiven. A typical use case for influxdb is to store metrics from your application and visualize them in Grafana.
          */
         influx?: {
             /**
@@ -635,7 +754,11 @@ export interface NaisSchema {
             instance: string
         }
         /**
-         * Enable Aiven Kafka for your Naisjob.
+         * List of URLs that will route HTTPS traffic to the application. All URLs must start with `https://`. Domain availability differs according to which environment your application is running in.
+         */
+        ingresses?: string[]
+        /**
+         * Set up Aiven Kafka for your application.
          */
         kafka?: {
             /**
@@ -648,7 +771,11 @@ export interface NaisSchema {
             streams?: boolean
         }
         /**
-         * Many Naisjobs running for long periods of time eventually transition to broken states, and cannot recover except by being restarted. Kubernetes provides liveness probes to detect and remedy such situations. Read more about this over at the [Kubernetes probes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
+         * If true, an HTTP endpoint will be available at `$ELECTOR_PATH` that returns the current leader.
+         */
+        leaderElection?: boolean
+        /**
+         * Many applications running for long periods of time eventually transition to broken states, and cannot recover except by being restarted. Kubernetes provides liveness probes to detect and remedy such situations. Read more about this over at the [Kubernetes probes documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
          */
         liveness?: {
             /**
@@ -697,7 +824,7 @@ export interface NaisSchema {
          */
         logtransform?: 'http_loglevel' | 'dns_loglevel'
         /**
-         * Configures a Maskinporten client for this Naisjob. See [Maskinporten](https://doc.nais.io/security/auth/maskinporten/) for more details.
+         * Configures a Maskinporten client for this application. See [Maskinporten](https://doc.nais.io/security/auth/maskinporten/) for more details.
          */
         maskinporten?: {
             /**
@@ -761,6 +888,17 @@ export interface NaisSchema {
             }
         }
         /**
+         * Configuration options related to application observability.
+         */
+        observability?: {
+            /**
+             * Enable application performance monitoring with traces collected using OpenTelemetry and the OTLP exporter.
+             */
+            tracing?: {
+                enabled?: boolean
+            }
+        }
+        /**
          * To get your own OpenSearch instance head over to the IaC-repo to provision each instance. See [navikt/aiven-iac](https://github.com/navikt/aiven-iac) repository.
          */
         openSearch?: {
@@ -774,9 +912,9 @@ export interface NaisSchema {
             instance: string
         }
         /**
-         * For running pods in parallel. If it is specified as 0, then the Job is effectively paused until it is increased.
+         * The port number which is exposed by the container and should receive traffic. Note that ports under 1024 are unavailable.
          */
-        parallelism?: number
+        port?: number
         /**
          * PreStopHook is called immediately before a container is terminated due to an API request or management event such as liveness/startup probe failure, preemption, resource contention, etc. The handler is not called if the container crashes or exits by itself. The reason for termination is passed to the handler.
          */
@@ -806,7 +944,19 @@ export interface NaisSchema {
             }
         }
         /**
-         * Sometimes, Naisjobs are temporarily unable to serve traffic. For example, an Naisjob might need to load large data or configuration files during startup, or depend on external services after startup. In such cases, you don't want to kill the Naisjob, but you don’t want to send it requests either. Kubernetes provides readiness probes to detect and mitigate these situations. A pod with containers reporting that they are not ready does not receive traffic through Kubernetes Services. Read more about this over at the [Kubernetes readiness documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
+         * A HTTP GET will be issued to this endpoint at least once before the pod is terminated. This feature is deprecated and will be removed in the next major version (nais.io/v1).
+         */
+        preStopHookPath?: string
+        /**
+         * Prometheus is used to [scrape metrics from the pod](https://doc.nais.io/observability/metrics/). Use this configuration to override the default values.
+         */
+        prometheus?: {
+            enabled?: boolean
+            path?: string
+            port?: string
+        }
+        /**
+         * Sometimes, applications are temporarily unable to serve traffic. For example, an application might need to load large data or configuration files during startup, or depend on external services after startup. In such cases, you don't want to kill the application, but you don’t want to send it requests either. Kubernetes provides readiness probes to detect and mitigate these situations. A pod with containers reporting that they are not ready does not receive traffic through Kubernetes Services. Read more about this over at the [Kubernetes readiness documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
          */
         readiness?: {
             /**
@@ -849,6 +999,27 @@ export interface NaisSchema {
             [k: string]: unknown
         }[]
         /**
+         * The numbers of pods to run in parallel.
+         */
+        replicas?: {
+            /**
+             * Amount of CPU usage before the autoscaler kicks in.
+             */
+            cpuThresholdPercentage?: number
+            /**
+             * Disable autoscaling
+             */
+            disableAutoScaling?: boolean
+            /**
+             * The pod autoscaler will increase replicas when required up to the maximum.
+             */
+            max?: number
+            /**
+             * The minimum amount of running replicas for a deployment.
+             */
+            min?: number
+        }
+        /**
          * When Containers have [resource requests](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) specified, the Kubernetes scheduler can make better decisions about which nodes to place pods on.
          */
         resources?: {
@@ -868,14 +1039,6 @@ export interface NaisSchema {
             }
         }
         /**
-         * RestartPolicy describes how the container should be restarted. Only one of the following restart policies may be specified. If none of the following policies is specified, the default one is Never. Read more about [Kubernetes handling pod and container failures](https://kubernetes.io/docs/concepts/workloads/controllers/job/#handling-pod-and-container-failures)
-         */
-        restartPolicy?: 'OnFailure' | 'Never'
-        /**
-         * The [Cron](https://en.wikipedia.org/wiki/Cron) schedule for running the Naisjob. If not specified, the Naisjob will be run as a one-shot Job. The timezone for Naisjobs defaults to UTC.
-         */
-        schedule?: string
-        /**
          * Whether or not to enable a sidecar container for secure logging.
          */
         secureLogs?: {
@@ -883,6 +1046,19 @@ export interface NaisSchema {
              * Whether to enable a sidecar container for secure logging. If enabled, a volume is mounted in the pods where secure logs can be saved.
              */
             enabled: boolean
+        }
+        /**
+         * Specify which port and protocol is used to connect to the application in the container. Defaults to HTTP on port 80.
+         */
+        service?: {
+            /**
+             * Port for the default service. Default port is 80.
+             */
+            port: number
+            /**
+             * Which protocol the backend service runs on. Default is `http`.
+             */
+            protocol?: 'http' | 'redis' | 'tcp' | 'grpc'
         }
         /**
          * Whether to skip injection of NAV certificate authority bundle or not. Defaults to false.
@@ -918,17 +1094,48 @@ export interface NaisSchema {
             timeout?: number
         }
         /**
-         * Specify how many completed Jobs should be kept.
+         * Specifies the strategy used to replace old Pods by new ones.
          */
-        successfulJobsHistoryLimit?: number
+        strategy?: {
+            /**
+             * Spec to control the desired behavior of rolling update.
+             */
+            rollingUpdate?: {
+                /**
+                 * The maximum number of pods that can be scheduled above the desired number of pods. Value can be an absolute number (ex: 5) or a percentage of desired pods (ex: 10%). This can not be 0 if MaxUnavailable is 0. Absolute number is calculated from percentage by rounding up. Defaults to 25%. Example: when this is set to 30%, the new ReplicaSet can be scaled up immediately when the rolling update starts, such that the total number of old and new pods do not exceed 130% of desired pods. Once old pods have been killed, new ReplicaSet can be scaled up further, ensuring that total number of pods running at any time during the update is at most 130% of desired pods.
+                 */
+                maxSurge?: {}
+                /**
+                 * The maximum number of pods that can be unavailable during the update. Value can be an absolute number (ex: 5) or a percentage of desired pods (ex: 10%). Absolute number is calculated from percentage by rounding down. This can not be 0 if MaxSurge is 0. Defaults to 25%. Example: when this is set to 30%, the old ReplicaSet can be scaled down to 70% of desired pods immediately when the rolling update starts. Once new pods are ready, old ReplicaSet can be scaled down further, followed by scaling up the new ReplicaSet, ensuring that the total number of pods available at all times during the update is at least 70% of desired pods.
+                 */
+                maxUnavailable?: {}
+            }
+            /**
+             * Specifies the strategy used to replace old Pods by new ones. `RollingUpdate` is the default value.
+             */
+            type?: 'Recreate' | 'RollingUpdate'
+        }
         /**
-         * The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. For most jobs, the default is more than enough. Defaults to 30 seconds.
+         * The grace period is the duration in seconds after the processes running in the pod are sent a termination signal and the time when the processes are forcibly halted with a kill signal. Set this value longer than the expected cleanup time for your process. For most applications, the default is more than enough. Defaults to 30 seconds.
          */
         terminationGracePeriodSeconds?: number
         /**
-         * Specify the number of seconds to wait before removing the Job after it has finished (either Completed or Failed). If the field is unset, this Job won't be cleaned up by the TTL controller after it finishes.
+         * Provisions and configures a TokenX client for your application.
          */
-        ttlSecondsAfterFinished?: number
+        tokenx?: {
+            /**
+             * If enabled, will provision and configure a TokenX client and inject an accompanying secret.
+             */
+            enabled: boolean
+            /**
+             * If enabled, secrets for TokenX will be mounted as files only, i.e. not as environment variables.
+             */
+            mountSecretsAsFilesOnly?: boolean
+        }
+        /**
+         * After the specified TTL, the application will be deleted.
+         */
+        ttl?: string
         /**
          * Provides secrets management, identity-based access, and encrypting application data for auditing of secrets for applications, systems, and users.
          */
@@ -964,7 +1171,7 @@ export interface NaisSchema {
             sidecar?: boolean
         }
         /**
-         * Inject on-premises web proxy configuration into the job container. Most Linux applications should auto-detect these settings from the `$HTTP_PROXY`, `$HTTPS_PROXY` and `$NO_PROXY` environment variables (and their lowercase counterparts). Java applications can start the JVM using parameters from the `$JAVA_PROXY_OPTIONS` environment variable.
+         * Inject on-premises web proxy configuration into the application pod. Most Linux applications should auto-detect these settings from the `$HTTP_PROXY`, `$HTTPS_PROXY` and `$NO_PROXY` environment variables (and their lowercase counterparts). Java applications can start the JVM using parameters from the `$JAVA_PROXY_OPTIONS` environment variable.
          */
         webproxy?: boolean
     }
