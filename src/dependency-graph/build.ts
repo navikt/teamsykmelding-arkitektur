@@ -19,9 +19,7 @@ export async function buildDependencyGraph({ cache }: { cache: boolean }): Promi
     }
 
     const folders = await fs.promises.readdir(gitOutputDir)
-    const appTuples = (await Promise.all(folders.filter((it) => it !== 'teamsykmelding-kafka-topics').map(analyzeApp)))
-        .filter((it) => it.length > 0)
-        .flat()
+    const appTuples = (await Promise.all(folders.map(analyzeApp))).filter((it) => it.length > 0).flat()
 
     const result: DependencyGraphResult = {
         'dev-gcp': {

@@ -34,28 +34,49 @@ export function getEnvironmentNaisTuple(file: GithubActionsSchema): EnvironmentN
     const naisJobs: [env: string, naiserator: string][] = Object.values(file.jobs)
         .filter((job): job is NormalJob => 'runs-on' in job)
         .filter((job) => job.steps?.filter((step) => step.uses?.startsWith('nais/deploy/actions/deploy')))
-        .flatMap(
-            (job) =>
-                job.steps
-                    ?.filter((step) => step.uses?.startsWith('nais/deploy/actions/deploy'))
-                    .map((step) => {
-                        if (typeof step.env === 'string') raise('Expected env to be an object')
-
-                        return [
-                            step.env?.['CLUSTER'] ?? raise('Missing CLUSTER property'),
-                            step.env?.['RESOURCE'] ?? raise('Missing RESOURCE propertry'),
-                        ] as [string, string]
-                    }),
-        )
+        .flatMap(extractClusterResourcesTuple(file.env))
         .filter(notNull)
-        .map(([env, resource]) => [
-            env,
-            resource.split('/').at(-1) ?? raise(`Weird format on resource name: ${resource}`),
-        ])
+        .flatMap(([env, resource]) => resource.split(',').map((it) => [env, it] as [string, string]))
 
     if (!naisJobs.length) {
         return null
     }
 
-    return naisJobs
+    return naisJobs.map(([env, resource]) => [
+        env,
+        resource.split('/').at(-1) ?? raise(`Weird format on resource name: ${resource}`),
+    ])
+}
+
+function extractClusterResourcesTuple(env: Record<string, string | number | boolean> | string | undefined) {
+    return (job: NormalJob): [string, string][] | null =>
+        job.steps
+            ?.filter((step) => step.uses?.startsWith('nais/deploy/actions/deploy'))
+            .map((step) => {
+                if (typeof step.env === 'string') raise('Expected env to be an object')
+
+                const resource = getResourceWithEnvReplace(step.env, env)
+
+                return [step.env?.['CLUSTER'] ?? raise('Missing CLUSTER property'), resource] as [string, string]
+            }) ?? null
+}
+
+function getResourceWithEnvReplace(
+    stepEnv: Record<string, string | number | boolean> | undefined,
+    env: Record<string, string | number | boolean> | string | undefined,
+): string {
+    const resource: string = `${stepEnv?.['RESOURCE'] ?? raise('Missing RESOURCE propertry')}`
+
+    if (resource.includes('$')) {
+        if (env == null || typeof env === 'string') {
+            raise(`Expected env to be an object, but was ${typeof env}`)
+        }
+
+        const [, value] =
+            Object.entries(env).find(([key]) => resource.includes(key)) ?? raise(`No env to replace ${resource} with`)
+
+        return value as string
+    }
+
+    return resource
 }
