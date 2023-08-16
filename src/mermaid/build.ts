@@ -1,31 +1,74 @@
-import * as R from 'remeda'
+import { AppMetadata, DatabaseMetadata, DependencyGraphEnvironment } from '../dependency-graph/types.ts'
+import { raise } from '../utils.ts'
 
-import { DepedencyNodeMetadata, NodeDependencies } from '../dependency-graph-old/types.ts'
+export function buildMermaid(graph: DependencyGraphEnvironment): string {
+    const baseNodes = graph.applications.map(createAppSubGraph).join('\n    ')
+    const outboundConnections = graph.applications
+        .filter((it) => it.dependencies.outbound.length)
+        .map(createOutboundConnections)
+        .join('\n    ')
+    const ingressConnections = graph.applications
+        .filter((it) => it.ingress)
+        .map(createIngressConnections)
+        .join('\n    ')
 
-export function buildMermaid(graph: DepedencyNodeMetadata[]): string {
-    const baseNodes = graph
-        .map((it) => it.application)
-        .slice(0, 5)
-        .join('\n')
+    const users = `
+    internal-users>Internal users]
+    external-users>External users]
+`
 
-    const outboundConnections = graph.map((node) => createOutboundNodes(node.application, node.environments))
-
-    return `flowchart TB
+    return `flowchart LR
+    ${users}
     ${baseNodes}
-    ${outboundConnections.join('\n')}
+    ${ingressConnections}
+    ${outboundConnections}
 `
 }
 
-function createOutboundNodes(application: string, environments: { env: string; dependencies: NodeDependencies }[]) {
+function createIngressConnections(app: AppMetadata) {
+    const metadata = app.ingress ?? raise('App has no ingress')
+    const isInternal = metadata.ingress.includes('intern')
+
+    if (metadata.wonderwall == null) {
+        return `    ${isInternal ? 'internal-users' : 'external-users'} --> ${app.app}-app`
+    } else {
+        return `    ${isInternal ? 'internal-users' : 'external-users'} --> ${app.app}-${metadata.wonderwall}-sidecar`
+    }
+}
+
+function createAppSubGraph(app: AppMetadata) {
     return `
-        ${environments.map((env) => {
-            console.log('env', env.env)
-            return `
-                subgraph ${env.env}
-                ${env.dependencies.outbound.map((it) => `${application}--->${it.application}`).join('\n')}
-                ${env.dependencies.inbound.map((it) => `${application}<---${it.application}`).join('\n')}
-                end
-            `
-        })}
-    `
+    subgraph ${app.app}-parent[${app.app}]
+    direction TB
+    ${createApplicationNode(app)}
+    ${createDatabaseNode(app.app, app.databases)}
+    ${createSidecarNodes(app)}
+    end`
+}
+
+function createSidecarNodes(app: AppMetadata) {
+    if (app.ingress == null) return ''
+    if (app.ingress.wonderwall == null) return ''
+
+    return `
+    ${app.app}-${app.ingress.wonderwall}-sidecar[${app.ingress.wonderwall} sidecar]
+    ${app.app}-${app.ingress.wonderwall}-sidecar --> ${app.app}-app
+`
+}
+
+function createOutboundConnections(app: AppMetadata) {
+    return `
+    ${app.dependencies.outbound.map((it) => `${app.app}-app --> ${it.application}-app`).join('\n    ')}
+`
+}
+
+function createApplicationNode(app: AppMetadata) {
+    return `${app.app}-app[${app.app}]`
+}
+
+function createDatabaseNode(parent: string, databases: { name: string; databases: string[] }[] | null) {
+    const dbNode = (db: DatabaseMetadata) => `${parent}-${db.name}[("${db.databases.join('\n')}")]
+    ${parent}-app --> ${parent}-${db.name}`
+
+    return databases?.map(dbNode).join('\n    ') || ''
 }

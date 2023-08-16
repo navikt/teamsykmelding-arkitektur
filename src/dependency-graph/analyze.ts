@@ -10,7 +10,8 @@ import { NaisSchemaTuple, parseYaml, WorkingFiles } from './yaml/parser.ts'
 import { globDirForYaml } from './yaml/globber.ts'
 import { EnvironmentNaisFileTuple, getEnvironmentNaisTuple } from './github.ts'
 import { NaisSchema } from './yaml/schemas/nais-schema.ts'
-import { AppMetadata } from './types.ts'
+import { AppMetadata, IngressMetadata } from './types.ts'
+import { randomUUID } from 'crypto'
 
 export async function analyzeApp(repoDir: string) {
     const dir = path.join(gitOutputDir, repoDir)
@@ -45,6 +46,18 @@ function createApplicationMetadata(relevantFiles: WorkingFiles[]) {
     return environmentMetadataTuples
 }
 
+function createIngressMetadata(spec: NaisSchema['spec']): IngressMetadata | null {
+    const ingress = spec.ingresses?.at(0)
+    if (ingress == null) {
+        return null
+    }
+
+    return {
+        ingress,
+        wonderwall: spec.idporten?.sidecar?.enabled ? 'idporten' : spec.azure?.sidecar?.enabled ? 'azure' : null,
+    }
+}
+
 function createAppMetadataForEnv(
     naiserators: NaisSchemaTuple[],
     [env, filename]: EnvironmentNaisFileTuple,
@@ -61,14 +74,13 @@ function createAppMetadataForEnv(
     return {
         app: file.metadata.name,
         namespace: file.metadata.namespace,
-        ingress: file.spec.ingresses?.at(0) ?? null,
+        ingress: createIngressMetadata(file.spec),
         databases:
             file.spec.gcp?.sqlInstances?.map((it) => ({
                 name: it.name ?? file.metadata.name,
                 databases: it.databases?.map((db) => db.name) ?? [],
             })) ?? null,
         dependencies: createApplicationDependencies(file.spec.accessPolicy),
-        // other: file.spec.ingresses
     }
 }
 

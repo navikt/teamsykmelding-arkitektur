@@ -20,4 +20,7 @@ if (gitArg) {
     console.info(`Not fetching git, last updated ${new Date(metadata.timestamp).toISOString()}`)
 }
 
-await buildDependencyGraph({ cache: cacheArg })
+const dependencyGraph = await buildDependencyGraph({ cache: cacheArg })
+const mermaid = buildMermaid(dependencyGraph['prod-gcp'])
+
+await writeMermaid(mermaid, 'graph.md')

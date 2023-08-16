@@ -3,18 +3,7 @@ import path from 'node:path'
 import { gitOutputDir } from '../git/git.ts'
 
 import { analyzeApp } from './analyze.ts'
-import { AppMetadata } from './types.ts'
-
-type DependencyGraphEnvironment = {
-    applications: AppMetadata[]
-}
-
-type DependencyGraphResult = {
-    'dev-gcp': DependencyGraphEnvironment
-    'prod-gcp': DependencyGraphEnvironment
-    'dev-fss': DependencyGraphEnvironment
-    'prod-fss': DependencyGraphEnvironment
-}
+import { AppMetadata, DependencyGraphResult } from './types.ts'
 
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<DependencyGraphResult> {
     if (cache) {
