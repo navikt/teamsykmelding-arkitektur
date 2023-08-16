@@ -1,4 +1,4 @@
-import { GithubActionsSchema, NormalJob } from '../dependency-graph/yaml/schemas/gha-schema.ts'
+import { GithubActionsSchema, NormalJob } from './yaml/schemas/gha-schema.ts'
 import { notNull, raise } from '../utils.ts'
 
 export type EnvironmentNaisFileTuple = [environment: string, naisFile: string]

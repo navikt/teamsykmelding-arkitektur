@@ -1,6 +1,6 @@
 import * as R from 'remeda'
 
-import { DepedencyNodeMetadata, NodeDependencies } from '../dependency-graph/types.ts'
+import { DepedencyNodeMetadata, NodeDependencies } from '../dependency-graph-old/types.ts'
 
 export function buildMermaid(graph: DepedencyNodeMetadata[]): string {
     const baseNodes = graph
