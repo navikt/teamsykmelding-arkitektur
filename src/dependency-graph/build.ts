@@ -3,7 +3,8 @@ import path from 'node:path'
 import { gitOutputDir } from '../git/git.ts'
 
 import { analyzeApp } from './analyze.ts'
-import { AppMetadata, DependencyGraphResult } from './types.ts'
+import { AppMetadata, DependencyGraphResult, TopicMetadata } from './types.ts'
+import { partition } from 'remeda'
 
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<DependencyGraphResult> {
     if (cache) {
@@ -19,20 +20,26 @@ export async function buildDependencyGraph({ cache }: { cache: boolean }): Promi
     }
 
     const folders = await fs.promises.readdir(gitOutputDir)
-    const appTuples = (await Promise.all(folders.map(analyzeApp))).filter((it) => it.length > 0).flat()
+    const envToMetadataTuples: [string, AppMetadata | TopicMetadata][] = (await Promise.all(folders.map(analyzeApp)))
+        .filter((it) => it.length > 0)
+        .flat()
 
     const result: DependencyGraphResult = {
         'dev-gcp': {
-            applications: getAppsForEnv('dev-gcp', appTuples),
+            applications: getForEnv('app', 'dev-gcp', envToMetadataTuples),
+            topics: getForEnv('topic', 'dev-gcp', envToMetadataTuples),
         },
         'prod-gcp': {
-            applications: getAppsForEnv('prod-gcp', appTuples),
+            applications: getForEnv('app', 'prod-gcp', envToMetadataTuples),
+            topics: getForEnv('topic', 'prod-gcp', envToMetadataTuples),
         },
         'dev-fss': {
-            applications: getAppsForEnv('dev-fss', appTuples),
+            applications: getForEnv('app', 'dev-fss', envToMetadataTuples),
+            topics: getForEnv('topic', 'dev-fss', envToMetadataTuples),
         },
         'prod-fss': {
-            applications: getAppsForEnv('prod-fss', appTuples),
+            applications: getForEnv('app', 'prod-fss', envToMetadataTuples),
+            topics: getForEnv('topic', 'prod-fss', envToMetadataTuples),
         },
     }
 
@@ -41,6 +48,11 @@ export async function buildDependencyGraph({ cache }: { cache: boolean }): Promi
     return result
 }
 
-function getAppsForEnv(cluster: string, appTuples: FlatArray<Awaited<Array<readonly [any, any]>>[], 1>[]) {
-    return appTuples.filter(([env]) => env === cluster).map(([, metadata]) => metadata)
+function getForEnv(what: 'app', cluster: string, appTuples: [string, AppMetadata | TopicMetadata][]): AppMetadata[]
+function getForEnv(what: 'topic', cluster: string, appTuples: [string, AppMetadata | TopicMetadata][]): TopicMetadata[]
+function getForEnv(what: 'app' | 'topic', cluster: string, appTuples: [string, AppMetadata | TopicMetadata][]) {
+    return appTuples
+        .filter(([, metadata]) => metadata.type === what)
+        .filter(([env]) => env === cluster)
+        .map(([, metadata]) => metadata)
 }
