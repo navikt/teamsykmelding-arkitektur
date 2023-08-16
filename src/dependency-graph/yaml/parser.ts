@@ -4,10 +4,39 @@ import { compact } from 'remeda'
 import { NaisSchema } from './schemas/nais-schema.ts'
 import { GithubActionsSchema } from './schemas/gha-schema.ts'
 import { raise } from '../../utils.ts'
+import { NaisTopicSchema } from './schemas/nais-topic-schema.ts'
+import { NaisJobSchema } from './schemas/nais-job.schema.ts'
 
-export type OtherNaisResource = [name: string]
-export type NaisSchemaTuple = [name: string, file: NaisSchema]
-export type WorkingFiles = NaisSchemaTuple | GithubActionsSchema | OtherNaisResource
+export type NaisApplication = {
+    type: 'app'
+    filename: string
+    absolutePath: string
+    application: NaisSchema
+}
+
+export type NaisTopic = {
+    type: 'topic'
+    filename: string
+    absolutePath: string
+    topic: NaisTopicSchema
+}
+
+export type GithubAction = {
+    type: 'action'
+    filename: string
+    absolutePath: string
+    action: GithubActionsSchema
+}
+
+export type NaisOther = {
+    type: 'other'
+    kind: string
+    filename: string
+    absolutePath: string
+    isOther: true
+}
+
+export type WorkingFiles = NaisApplication | NaisTopic | GithubAction | NaisOther
 
 export async function parseYaml(file: string): Promise<(WorkingFiles | null)[]> {
     const content = await Bun.file(file).text()
@@ -17,16 +46,37 @@ export async function parseYaml(file: string): Promise<(WorkingFiles | null)[]> 
 
 async function parseYamlDocument(file: string, content: string): Promise<WorkingFiles | null> {
     try {
-        const yaml = load(content.replace('{{appname}}', '<app>')) as NaisSchema | GithubActionsSchema
+        const yaml = load(content.replace('{{appname}}', '<app>')) as
+            | NaisSchema
+            | GithubActionsSchema
+            | NaisTopicSchema
+            | NaisJobSchema
 
+        const fileWithExtension = file.split('/').at(-1) ?? raise("Filename doesn't make sense")
         if ('apiVersion' in yaml && yaml.kind === 'Application') {
-            // Should be a nais schema
-            return [file.split('/').at(-1) ?? raise("Filename doesn't make sense"), yaml]
+            return {
+                type: 'app',
+                filename: fileWithExtension,
+                absolutePath: file,
+                application: yaml,
+            } satisfies NaisApplication
+        } else if ('apiVersion' in yaml && yaml.kind === 'Topic') {
+            return { type: 'topic', filename: fileWithExtension, absolutePath: file, topic: yaml } satisfies NaisTopic
         } else if ('jobs' in yaml) {
-            // Should be a github workflow schema
-            return yaml
+            return {
+                type: 'action',
+                filename: fileWithExtension,
+                absolutePath: file,
+                action: yaml,
+            } satisfies GithubAction
         } else if (yaml.kind) {
-            return [file.split('/').at(-1) ?? raise("Filename doesn't make sense")]
+            return {
+                type: 'other',
+                kind: yaml.kind,
+                filename: fileWithExtension,
+                absolutePath: file,
+                isOther: true,
+            } satisfies NaisOther
         } else {
             console.debug(`Not naiserator or workflow: ${file.split('/').slice(-4).join('/')}`)
             return null

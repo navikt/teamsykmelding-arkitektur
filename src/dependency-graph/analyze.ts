@@ -5,13 +5,11 @@ import fs from 'node:fs'
 import { notNull, raise } from '../utils.ts'
 import { gitOutputDir } from '../git/git.ts'
 
-import { GithubActionsSchema } from './yaml/schemas/gha-schema.ts'
-import { NaisSchemaTuple, parseYaml, WorkingFiles } from './yaml/parser.ts'
+import { NaisApplication, GithubAction, parseYaml, WorkingFiles, NaisOther, NaisTopic } from './yaml/parser.ts'
 import { globDirForYaml } from './yaml/globber.ts'
 import { EnvironmentNaisFileTuple, getEnvironmentNaisTuple } from './github.ts'
 import { NaisSchema } from './yaml/schemas/nais-schema.ts'
 import { AppMetadata, IngressMetadata } from './types.ts'
-import { randomUUID } from 'crypto'
 
 export async function analyzeApp(repoDir: string) {
     const dir = path.join(gitOutputDir, repoDir)
@@ -32,13 +30,19 @@ export async function analyzeApp(repoDir: string) {
 }
 
 function createApplicationMetadata(relevantFiles: WorkingFiles[]) {
-    const naiserators = relevantFiles.filter((it): it is NaisSchemaTuple => Array.isArray(it))
-    const githubWorkflows = relevantFiles.filter((it): it is GithubActionsSchema => 'jobs' in it)
-    const environments = githubWorkflows.map(getEnvironmentNaisTuple).filter(notNull).flat()
+    const napsApps = relevantFiles.filter((it): it is NaisApplication => it.type === 'app')
+    const naisTopics = relevantFiles.filter((it): it is NaisTopic => it.type === 'topic')
+    const naisJobs = relevantFiles.filter((it): it is NaisOther => it.type === 'other')
+    const githubWorkflows = relevantFiles.filter((it): it is GithubAction => it.type === 'action')
+    const environments = githubWorkflows
+        .map((it) => it.action)
+        .map(getEnvironmentNaisTuple)
+        .filter(notNull)
+        .flat()
 
     const environmentMetadataTuples = R.pipe(
         environments,
-        R.map((env) => [env[0], createAppMetadataForEnv(naiserators, env)]),
+        R.map((env) => [env[0], createAppMetadataForEnv([...napsApps, ...naisJobs, ...naisTopics], env)]),
         R.filter((tuple): tuple is [string, AppMetadata] => tuple[1] != null),
         R.uniqBy(([env, metadata]) => `${metadata.namespace}-${env}-${metadata.app}`),
     )
@@ -59,28 +63,35 @@ function createIngressMetadata(spec: NaisSchema['spec']): IngressMetadata | null
 }
 
 function createAppMetadataForEnv(
-    naiserators: NaisSchemaTuple[],
+    naiserators: (NaisApplication | NaisOther | NaisTopic)[],
     [env, filename]: EnvironmentNaisFileTuple,
 ): AppMetadata | null {
-    const [, file] =
-        naiserators.find(([naisFilename]) => filename === naisFilename) ??
-        raise(`Unable to find naiserator '${filename}' (${env})`)
+    const naisApp =
+        naiserators.find((app) => filename === app.filename) ??
+        raise(`Unable to find naiserator '${filename}' (${env}) in ${naiserators.length} nais-files`)
 
-    if (file == null) {
-        console.info(`Seems like ${filename} is some other nais resource, ignoring`)
+    if (naisApp.type === 'other') {
+        console.info(`Seems like ${filename} is some other nais resource (kind: ${naisApp.kind}), ignoring`)
         return null
     }
 
+    if (naisApp.type === 'topic') {
+        console.info(`Seems like ${filename} is a topic, ignoring`)
+        return null
+    }
+
+    const { application } = naisApp
+
     return {
-        app: file.metadata.name,
-        namespace: file.metadata.namespace,
-        ingress: createIngressMetadata(file.spec),
+        app: application.metadata.name,
+        namespace: application.metadata.namespace,
+        ingress: createIngressMetadata(application.spec),
         databases:
-            file.spec.gcp?.sqlInstances?.map((it) => ({
-                name: it.name ?? file.metadata.name,
+            application.spec.gcp?.sqlInstances?.map((it) => ({
+                name: it.name ?? application.metadata.name,
                 databases: it.databases?.map((db) => db.name) ?? [],
             })) ?? null,
-        dependencies: createApplicationDependencies(file.spec.accessPolicy),
+        dependencies: createApplicationDependencies(application.spec.accessPolicy),
     }
 }
 
