@@ -5,6 +5,7 @@ import { gitOutputDir } from '../git/git.ts'
 import { analyzeApp } from './analyze.ts'
 import { AppMetadata, DependencyGraphResult, TopicMetadata } from './types.ts'
 
+
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<DependencyGraphResult> {
     if (cache) {
         const bunFile = Bun.file(path.join(gitOutputDir, 'graph.json'))

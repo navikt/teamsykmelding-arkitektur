@@ -7,7 +7,7 @@ import { gitOutputDir } from '../git/git.ts'
 
 import { GithubAction, NaisApplication, NaisOther, NaisTopic, parseYaml, WorkingFiles } from './yaml/parser.ts'
 import { globDirForYaml } from './yaml/globber.ts'
-import { EnvironmentNaisFileTuple, getEnvironmentNaisTuple } from './github.ts'
+import { GithubDeducedEnvironmentNaisFileTuple, getEnvironmentNaisTuple } from './github.ts'
 import { NaisSchema } from './yaml/schemas/nais-schema.ts'
 import { AppMetadata, IngressMetadata, TopicDependency, TopicMetadata } from './types.ts'
 import { NaisTopicSchema } from './yaml/schemas/nais-topic-schema.ts'
@@ -65,7 +65,7 @@ function createIngressMetadata(spec: NaisSchema['spec']): IngressMetadata | null
 
 function createAppMetadataForEnv(
     naiserators: (NaisApplication | NaisOther | NaisTopic)[],
-    [env, filename]: EnvironmentNaisFileTuple,
+    [env, filename]: GithubDeducedEnvironmentNaisFileTuple,
 ): AppMetadata | TopicMetadata | null {
     const naisApp =
         naiserators.find((app) => filename === app.filename) ??

@@ -1,9 +1,9 @@
 import { GithubActionsSchema, NormalJob } from './yaml/schemas/gha-schema.ts'
 import { notNull, raise } from '../utils.ts'
 
-export type EnvironmentNaisFileTuple = [environment: string, naisFile: string]
+export type GithubDeducedEnvironmentNaisFileTuple = [environment: string, naisFile: string]
 
-export function getEnvironmentNaisTuple(file: GithubActionsSchema): EnvironmentNaisFileTuple[] | null {
+export function getEnvironmentNaisTuple(file: GithubActionsSchema): GithubDeducedEnvironmentNaisFileTuple[] | null {
     const jobKeys = Object.keys(file.jobs)
     const firstJob = file.jobs[jobKeys[0]]
     if ('uses' in firstJob && firstJob?.uses?.includes('teamsykmelding-github-actions-workflows')) {

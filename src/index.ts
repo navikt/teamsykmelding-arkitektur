@@ -3,6 +3,7 @@ import { cloneOrPull, readCacheMetadata, updateCacheMetadata } from './git/clone
 import { buildMermaid } from './mermaid/build.ts'
 import { writeMermaid } from './mermaid/write.ts'
 import { buildDependencyGraph } from './dependency-graph/build.ts'
+import server from './server'
 
 const gitArg = Bun.argv.includes('--git')
 const cacheArg = Bun.argv.includes('--cache')
@@ -24,3 +25,5 @@ const dependencyGraph = await buildDependencyGraph({ cache: cacheArg })
 const mermaid = buildMermaid(dependencyGraph['prod-gcp'])
 
 await writeMermaid(mermaid, 'graph.md')
+
+export default server
