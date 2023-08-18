@@ -26,8 +26,8 @@ export default {
             })
         }
 
-        if (url.pathname === '/graph.js') {
-            return new Response(await Bun.file(path.join(process.cwd(), 'public', 'graph.js')).text(), {
+        if (url.pathname === '/graph.js' || url.pathname === '/graph-utils.js') {
+            return new Response(await Bun.file(path.join(process.cwd(), 'public', url.pathname)).text(), {
                 headers: {
                     'content-type': 'application/javascript',
                 },

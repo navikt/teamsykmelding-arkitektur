@@ -618,10 +618,16 @@ flowchart LR
 
 
     omrade-helse-etterlevelse-topic --> spydig-app
-    spydig-app --> omrade-helse-etterlevelse-topic
+    syfosoknad-app --> omrade-helse-etterlevelse-topic
+    sykepengesoknad-backend-app --> omrade-helse-etterlevelse-topic
+    flex-syketilfelle-app --> omrade-helse-etterlevelse-topic
+    teamsykmelding-pik-app --> omrade-helse-etterlevelse-topic
+    teamsykmelding-pik-2-app --> omrade-helse-etterlevelse-topic
+    sigmund-app --> omrade-helse-etterlevelse-topic
+    spre-subsumsjon-app --> omrade-helse-etterlevelse-topic
 
     privat-aktiver-planlagtmelding-topic --> sparenaproxy-app
-    sparenaproxy-app --> privat-aktiver-planlagtmelding-topic
+    sparenajob-app --> privat-aktiver-planlagtmelding-topic
 
     legeerklaering-topic --> macgyver-app
     legeerklaering-topic --> pale-2-sak-app
@@ -629,10 +635,7 @@ flowchart LR
     legeerklaering-topic --> k143566-app
     legeerklaering-topic --> isbehandlerdialog-app
     macgyver-app --> legeerklaering-topic
-    pale-2-sak-app --> legeerklaering-topic
-    pale-2-register-app --> legeerklaering-topic
-    k143566-app --> legeerklaering-topic
-    isbehandlerdialog-app --> legeerklaering-topic
+    pale-2-app --> legeerklaering-topic
 
     syfo-sendt-sykmelding-topic --> syfosmaltinn-app
     syfo-sendt-sykmelding-topic --> narmesteleder-varsel-app
@@ -645,30 +648,19 @@ flowchart LR
     syfo-sendt-sykmelding-topic --> dinesykmeldte-kafka-app
     syfo-sendt-sykmelding-topic --> min-side-arbeidsgiver-api-app
     syfo-sendt-sykmelding-topic --> sykmeldinger-backend-kafka-app
-    syfosmaltinn-app --> syfo-sendt-sykmelding-topic
-    narmesteleder-varsel-app --> syfo-sendt-sykmelding-topic
-    sykmeldinger-arbeidsgiver-app --> syfo-sendt-sykmelding-topic
-    sykepengesoknad-backend-app --> syfo-sendt-sykmelding-topic
-    flex-syketilfelle-app --> syfo-sendt-sykmelding-topic
-    sykepengesoknad-altinn-app --> syfo-sendt-sykmelding-topic
-    dinesykmeldte-backend-app --> syfo-sendt-sykmelding-topic
+    syfosmregister-app --> syfo-sendt-sykmelding-topic
     macgyver-app --> syfo-sendt-sykmelding-topic
-    dinesykmeldte-kafka-app --> syfo-sendt-sykmelding-topic
-    min-side-arbeidsgiver-api-app --> syfo-sendt-sykmelding-topic
-    sykmeldinger-backend-kafka-app --> syfo-sendt-sykmelding-topic
 
     syfo-bekreftet-sykmelding-topic --> sykepengesoknad-backend-app
     syfo-bekreftet-sykmelding-topic --> flex-syketilfelle-app
     syfo-bekreftet-sykmelding-topic --> macgyver-app
     syfo-bekreftet-sykmelding-topic --> sykmeldinger-backend-kafka-app
-    sykepengesoknad-backend-app --> syfo-bekreftet-sykmelding-topic
-    flex-syketilfelle-app --> syfo-bekreftet-sykmelding-topic
+    syfosmregister-app --> syfo-bekreftet-sykmelding-topic
     macgyver-app --> syfo-bekreftet-sykmelding-topic
-    sykmeldinger-backend-kafka-app --> syfo-bekreftet-sykmelding-topic
 
     syfo-mottatt-sykmelding-topic --> flex-syketilfelle-app
     syfo-mottatt-sykmelding-topic --> macgyver-app
-    flex-syketilfelle-app --> syfo-mottatt-sykmelding-topic
+    syfosmregister-app --> syfo-mottatt-sykmelding-topic
     macgyver-app --> syfo-mottatt-sykmelding-topic
 
     avvist-sykmelding-topic --> syfosmregister-app
@@ -676,11 +668,8 @@ flowchart LR
     avvist-sykmelding-topic --> syfosmsak-stream-app
     avvist-sykmelding-topic --> sykmeldinger-backend-kafka-app
     avvist-sykmelding-topic --> k143566-app
+    syfosmmottak-app --> avvist-sykmelding-topic
     syfosmregister-app --> avvist-sykmelding-topic
-    syfosmvarsel-app --> avvist-sykmelding-topic
-    syfosmsak-stream-app --> avvist-sykmelding-topic
-    sykmeldinger-backend-kafka-app --> avvist-sykmelding-topic
-    k143566-app --> avvist-sykmelding-topic
 
     manuell-behandling-sykmelding-topic --> syfosmregister-app
     manuell-behandling-sykmelding-topic --> syfosmvarsel-app
@@ -692,16 +681,8 @@ flowchart LR
     manuell-behandling-sykmelding-topic --> sykmeldinger-backend-kafka-app
     manuell-behandling-sykmelding-topic --> dvh-sykefravar-airflow-kafka-app
     manuell-behandling-sykmelding-topic --> sykepengesoknad-backend-app
+    syfosmmottak-app --> manuell-behandling-sykmelding-topic
     syfosmregister-app --> manuell-behandling-sykmelding-topic
-    syfosmvarsel-app --> manuell-behandling-sykmelding-topic
-    syfosmsak-stream-app --> manuell-behandling-sykmelding-topic
-    syfosmarena-stream-app --> manuell-behandling-sykmelding-topic
-    sparenaproxy-app --> manuell-behandling-sykmelding-topic
-    dvh-sykm-konsument-app --> manuell-behandling-sykmelding-topic
-    isdialogmelding-app --> manuell-behandling-sykmelding-topic
-    sykmeldinger-backend-kafka-app --> manuell-behandling-sykmelding-topic
-    dvh-sykefravar-airflow-kafka-app --> manuell-behandling-sykmelding-topic
-    sykepengesoknad-backend-app --> manuell-behandling-sykmelding-topic
 
     ok-sykmelding-topic --> syfosmregister-app
     ok-sykmelding-topic --> syfosmvarsel-app
@@ -715,29 +696,28 @@ flowchart LR
     ok-sykmelding-topic --> k143566-app
     ok-sykmelding-topic --> dvh-sykefravar-airflow-kafka-app
     ok-sykmelding-topic --> sykepengesoknad-backend-app
+    syfosmmottak-app --> ok-sykmelding-topic
+    syfosmmanuell-backend-app --> ok-sykmelding-topic
+    syfosmpapirmottak-app --> ok-sykmelding-topic
+    smregistrering-backend-app --> ok-sykmelding-topic
+    syk-dig-backend-app --> ok-sykmelding-topic
+    macgyver-app --> ok-sykmelding-topic
     syfosmregister-app --> ok-sykmelding-topic
-    syfosmvarsel-app --> ok-sykmelding-topic
-    syfosmsak-stream-app --> ok-sykmelding-topic
-    syfosminfotrygd-app --> ok-sykmelding-topic
-    syfosmarena-stream-app --> ok-sykmelding-topic
-    sparenaproxy-app --> ok-sykmelding-topic
-    dvh-sykm-konsument-app --> ok-sykmelding-topic
-    isdialogmelding-app --> ok-sykmelding-topic
-    sykmeldinger-backend-kafka-app --> ok-sykmelding-topic
-    k143566-app --> ok-sykmelding-topic
-    dvh-sykefravar-airflow-kafka-app --> ok-sykmelding-topic
-    sykepengesoknad-backend-app --> ok-sykmelding-topic
 
     oppgave-journal-opprettet-topic --> syfosmarena-stream-app
     oppgave-journal-opprettet-topic --> syfosmoppgave-stream-app
-    syfosmarena-stream-app --> oppgave-journal-opprettet-topic
-    syfosmoppgave-stream-app --> oppgave-journal-opprettet-topic
+    syfosmsak-app --> oppgave-journal-opprettet-topic
 
     oppgave-produser-oppgave-topic --> syfosmoppgave-stream-app
-    syfosmoppgave-stream-app --> oppgave-produser-oppgave-topic
+    syfosmmottak-app --> oppgave-produser-oppgave-topic
+    syfosmmanuell-backend-app --> oppgave-produser-oppgave-topic
+    syfosmpapirmottak-app --> oppgave-produser-oppgave-topic
+    syfosmsak-app --> oppgave-produser-oppgave-topic
+    syfosminfotrygd-app --> oppgave-produser-oppgave-topic
 
     papir-sm-registering-topic --> smregistrering-backend-app
-    smregistrering-backend-app --> papir-sm-registering-topic
+    syfosmpapirmottak-app --> papir-sm-registering-topic
+    macgyver-app --> papir-sm-registering-topic
 
     privat-arena-input-topic --> syfosmarena-app
     privat-arena-input-topic --> syfosmarena-stream-app
@@ -745,7 +725,7 @@ flowchart LR
     syfosmarena-stream-app --> privat-arena-input-topic
 
     privat-registrer-oppgave-topic --> syfosmoppgave-app
-    syfosmoppgave-app --> privat-registrer-oppgave-topic
+    syfosmoppgave-stream-app --> privat-registrer-oppgave-topic
 
     privat-oppgave-retry-topic --> syfosmoppgave-app
     syfosmoppgave-app --> privat-oppgave-retry-topic
@@ -759,62 +739,72 @@ flowchart LR
     syfosmsak-stream-app --> privat-sykmelding-sak-topic
 
     syfoservice-mq-topic --> syfoservice-mq-producer-app
-    syfoservice-mq-producer-app --> syfoservice-mq-topic
+    macgyver-app --> syfoservice-mq-topic
+    syfosmpapirmottak-app --> syfoservice-mq-topic
+    syfosmpapirmottak-app --> syfoservice-mq-topic
+    syfosmmanuell-backend-app --> syfoservice-mq-topic
+    smregistrering-backend-app --> syfoservice-mq-topic
 
     sykmelding-apprec-topic --> syfosmapprec-app
-    syfosmapprec-app --> sykmelding-apprec-topic
+    syfosmmottak-app --> sykmelding-apprec-topic
+    syfosmmanuell-backend-app --> sykmelding-apprec-topic
 
     sykmelding-behandlingsutfall-topic --> syfosmregister-app
     sykmelding-behandlingsutfall-topic --> syfosmsak-stream-app
     sykmelding-behandlingsutfall-topic --> sykmeldinger-backend-kafka-app
+    syfosmmottak-app --> sykmelding-behandlingsutfall-topic
+    macgyver-app --> sykmelding-behandlingsutfall-topic
+    syfosminfotrygd-app --> sykmelding-behandlingsutfall-topic
     syfosmregister-app --> sykmelding-behandlingsutfall-topic
-    syfosmsak-stream-app --> sykmelding-behandlingsutfall-topic
-    sykmeldinger-backend-kafka-app --> sykmelding-behandlingsutfall-topic
 
     sykmelding-manuell-topic --> syfosmmanuell-backend-app
-    syfosmmanuell-backend-app --> sykmelding-manuell-topic
+    syfosmmottak-app --> sykmelding-manuell-topic
+    macgyver-app --> sykmelding-manuell-topic
 
     sykmeldingstatus-leesah-topic --> syfosmregister-app
     sykmeldingstatus-leesah-topic --> syfosmvarsel-app
     sykmeldingstatus-leesah-topic --> macgyver-app
     sykmeldingstatus-leesah-topic --> sykmeldinger-backend-kafka-app
     sykmeldingstatus-leesah-topic --> isoppfolgingstilfelle-app
+    sykmeldinger-backend-app --> sykmeldingstatus-leesah-topic
     syfosmregister-app --> sykmeldingstatus-leesah-topic
-    syfosmvarsel-app --> sykmeldingstatus-leesah-topic
     macgyver-app --> sykmeldingstatus-leesah-topic
-    sykmeldinger-backend-kafka-app --> sykmeldingstatus-leesah-topic
-    isoppfolgingstilfelle-app --> sykmeldingstatus-leesah-topic
 
     sykmelding-historisk-topic --> macgyver-app
     sykmelding-historisk-topic --> sykmeldinger-backend-kafka-app
     macgyver-app --> sykmelding-historisk-topic
-    sykmeldinger-backend-kafka-app --> sykmelding-historisk-topic
 
     paragraf-i-kode-topic --> teamsykmelding-pik-app
     paragraf-i-kode-topic --> teamsykmelding-pik-2-app
-    teamsykmelding-pik-app --> paragraf-i-kode-topic
-    teamsykmelding-pik-2-app --> paragraf-i-kode-topic
+    syfosmregler-app --> paragraf-i-kode-topic
+    syfosmpapirregler-app --> paragraf-i-kode-topic
 
     syk-dig-oppgave-topic --> syk-dig-backend-app
-    syk-dig-backend-app --> syk-dig-oppgave-topic
+    syfosmpapirmottak-app --> syk-dig-oppgave-topic
+    syk-dig-oppgavelytter-app --> syk-dig-oppgave-topic
 
     gamle-sykmeldinger-topic --> macgyver-app
     gamle-sykmeldinger-topic --> sykmeldinger-backend-kafka-app
     macgyver-app --> gamle-sykmeldinger-topic
-    sykmeldinger-backend-kafka-app --> gamle-sykmeldinger-topic
 
     dinesykmeldte-hendelser-topic --> dinesykmeldte-backend-app
     dinesykmeldte-hendelser-topic --> dinesykmeldte-kafka-app
+    syfoservicestrangler-app --> dinesykmeldte-hendelser-topic
     dinesykmeldte-backend-app --> dinesykmeldte-hendelser-topic
-    dinesykmeldte-kafka-app --> dinesykmeldte-hendelser-topic
+    macgyver-app --> dinesykmeldte-hendelser-topic
 
     dinesykmeldte-hendelser-v2-topic --> dinesykmeldte-backend-app
     dinesykmeldte-hendelser-v2-topic --> dinesykmeldte-kafka-app
     dinesykmeldte-backend-app --> dinesykmeldte-hendelser-v2-topic
-    dinesykmeldte-kafka-app --> dinesykmeldte-hendelser-v2-topic
+    sykepengesoknad-narmesteleder-varsler-app --> dinesykmeldte-hendelser-v2-topic
+    esyfovarsel-app --> dinesykmeldte-hendelser-v2-topic
+    isdialogmote-app --> dinesykmeldte-hendelser-v2-topic
+    syfomotebehov-app --> dinesykmeldte-hendelser-v2-topic
 
     syfo-nl-request-topic --> syfonlaltinn-app
-    syfonlaltinn-app --> syfo-nl-request-topic
+    syfosmaltinn-app --> syfo-nl-request-topic
+    narmesteleder-app --> syfo-nl-request-topic
+    macgyver-app --> syfo-nl-request-topic
 
     syfo-nl-invalid-topic --> syfonlaltinn-app
     syfonlaltinn-app --> syfo-nl-invalid-topic
@@ -823,8 +813,11 @@ flowchart LR
     syfo-narmesteleder-topic --> syfoservicestrangler-app
     syfo-narmesteleder-topic --> narmesteleder-app
     syfosmaltinn-app --> syfo-narmesteleder-topic
-    syfoservicestrangler-app --> syfo-narmesteleder-topic
+    syfonlaltinn-app --> syfo-narmesteleder-topic
     narmesteleder-app --> syfo-narmesteleder-topic
+    smacgyver-app --> syfo-narmesteleder-topic
+    narmesteleder-arbeidsforhold-app --> syfo-narmesteleder-topic
+    dinesykmeldte-backend-app --> syfo-narmesteleder-topic
 
     syfo-narmesteleder-leesah-topic --> narmesteleder-app
     syfo-narmesteleder-leesah-topic --> narmesteleder-varsel-app
@@ -841,19 +834,6 @@ flowchart LR
     syfo-narmesteleder-leesah-topic --> dinesykmeldte-kafka-app
     syfo-narmesteleder-leesah-topic --> sykmeldinger-backend-kafka-app
     narmesteleder-app --> syfo-narmesteleder-leesah-topic
-    narmesteleder-varsel-app --> syfo-narmesteleder-leesah-topic
-    sykepengesoknad-narmesteleder-varsler-app --> syfo-narmesteleder-leesah-topic
-    sykepengesoknad-ikke-sendt-altinnvarsel-app --> syfo-narmesteleder-leesah-topic
-    sykepengesoknad-backend-app --> syfo-narmesteleder-leesah-topic
-    narmesteleder-arbeidsforhold-app --> syfo-narmesteleder-leesah-topic
-    isnarmesteleder-app --> syfo-narmesteleder-leesah-topic
-    dinesykmeldte-backend-app --> syfo-narmesteleder-leesah-topic
-    sykmeldinger-arbeidsgiver-app --> syfo-narmesteleder-leesah-topic
-    notifikasjon-bruker-api-writer-app --> syfo-narmesteleder-leesah-topic
-    syfosmaltinn-app --> syfo-narmesteleder-leesah-topic
-    min-side-arbeidsgiver-api-app --> syfo-narmesteleder-leesah-topic
-    dinesykmeldte-kafka-app --> syfo-narmesteleder-leesah-topic
-    sykmeldinger-backend-kafka-app --> syfo-narmesteleder-leesah-topic
 
     macgyver-sykmelding-endringslogg-topic --> macgyver-app
     macgyver-app --> macgyver-sykmelding-endringslogg-topic
@@ -872,25 +852,18 @@ flowchart LR
     flex-syketilfelle-app[flex-syketilfelle]
     flex-syketilfelle-app[flex-syketilfelle]
     flex-syketilfelle-app[flex-syketilfelle]
+    syfosoknad-app[syfosoknad]
+    sykepengesoknad-backend-app[sykepengesoknad-backend]
+    flex-syketilfelle-app[flex-syketilfelle]
     sykepengesoknad-backend-app[sykepengesoknad-backend]
     flex-syketilfelle-app[flex-syketilfelle]
     sykepengesoknad-altinn-app[sykepengesoknad-altinn]
     sykepengesoknad-backend-app[sykepengesoknad-backend]
     flex-syketilfelle-app[flex-syketilfelle]
-    sykepengesoknad-altinn-app[sykepengesoknad-altinn]
-    sykepengesoknad-backend-app[sykepengesoknad-backend]
     flex-syketilfelle-app[flex-syketilfelle]
-    sykepengesoknad-backend-app[sykepengesoknad-backend]
-    flex-syketilfelle-app[flex-syketilfelle]
-    flex-syketilfelle-app[flex-syketilfelle]
-    flex-syketilfelle-app[flex-syketilfelle]
-    sykepengesoknad-backend-app[sykepengesoknad-backend]
-    sykepengesoknad-backend-app[sykepengesoknad-backend]
     sykepengesoknad-backend-app[sykepengesoknad-backend]
     sykepengesoknad-backend-app[sykepengesoknad-backend]
     sykepengesoknad-narmesteleder-varsler-app[sykepengesoknad-narmesteleder-varsler]
-    sykepengesoknad-ikke-sendt-altinnvarsel-app[sykepengesoknad-ikke-sendt-altinnvarsel]
-    sykepengesoknad-backend-app[sykepengesoknad-backend]
     sykepengesoknad-narmesteleder-varsler-app[sykepengesoknad-narmesteleder-varsler]
     sykepengesoknad-ikke-sendt-altinnvarsel-app[sykepengesoknad-ikke-sendt-altinnvarsel]
     sykepengesoknad-backend-app[sykepengesoknad-backend]
@@ -913,14 +886,13 @@ flowchart LR
     syfooppfolgingsplanservice-app[syfooppfolgingsplanservice]
     oppfolgingsplan-frontend-app[oppfolgingsplan-frontend]
     dialogmote-frontend-app[dialogmote-frontend]
+    esyfovarsel-app[esyfovarsel]
+    syfomotebehov-app[syfomotebehov]
     end
 
     subgraph fager[fager]
     direction TB
     notifikasjon-bruker-api-app[notifikasjon-bruker-api]
-    min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
-    min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
-    notifikasjon-bruker-api-writer-app[notifikasjon-bruker-api-writer]
     min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
     notifikasjon-bruker-api-writer-app[notifikasjon-bruker-api-writer]
     min-side-arbeidsgiver-api-app[min-side-arbeidsgiver-api]
@@ -938,20 +910,17 @@ flowchart LR
     syfo-tilgangskontroll-app[syfo-tilgangskontroll]
     isbehandlerdialog-app[isbehandlerdialog]
     isbehandlerdialog-app[isbehandlerdialog]
-    isbehandlerdialog-app[isbehandlerdialog]
-    isdialogmelding-app[isdialogmelding]
-    isdialogmelding-app[isdialogmelding]
     isdialogmelding-app[isdialogmelding]
     isdialogmelding-app[isdialogmelding]
     isoppfolgingstilfelle-app[isoppfolgingstilfelle]
-    isoppfolgingstilfelle-app[isoppfolgingstilfelle]
-    isnarmesteleder-app[isnarmesteleder]
+    isdialogmote-app[isdialogmote]
     isnarmesteleder-app[isnarmesteleder]
     end
 
     subgraph risk[risk]
     direction TB
     smoppslag-app[smoppslag]
+    sigmund-app[sigmund]
     end
 
     subgraph nais-system[nais-system]
@@ -963,15 +932,11 @@ flowchart LR
     subgraph tbd[tbd]
     direction TB
     spydig-app[spydig]
-    spydig-app[spydig]
+    spre-subsumsjon-app[spre-subsumsjon]
     end
 
     subgraph disykefravar[disykefravar]
     direction TB
-    dvh-sykm-konsument-app[dvh-sykm-konsument]
-    dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
-    dvh-sykm-konsument-app[dvh-sykm-konsument]
-    dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
     dvh-sykm-konsument-app[dvh-sykm-konsument]
     dvh-sykefravar-airflow-kafka-app[dvh-sykefravar-airflow-kafka]
     dvh-sykm-konsument-app[dvh-sykm-konsument]

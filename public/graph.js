@@ -1,4 +1,5 @@
 import * as R from 'https://cdn.jsdelivr.net/npm/remeda@1.24.1/+esm'
+import { getTeamSykmeldingAppNodes } from './graph-utils.js'
 
 const params = new URLSearchParams(window.location.search)
 
@@ -46,51 +47,18 @@ const toggleMetadata = {
     },
 }
 
+const baseUsers = [
+    { id: 'user', label: 'Bruker', group: 'user' },
+    { id: 'internal-user', label: 'Intern bruker', group: 'internalUser' },
+]
+
 async function updateGraph(options) {
     nodes.clear()
     edges.clear()
 
-    nodes.add([
-        {
-            id: 'user',
-            label: 'Bruker',
-            group: 'user',
-        },
-        {
-            id: 'internal-user',
-            label: 'Intern bruker',
-            group: 'internalUser',
-        },
-    ])
+    nodes.add(baseUsers)
 
-    const teamSykmeldingAppNodes = R.pipe(
-        cluster.applications,
-        R.flatMap((it) => {
-            if (it.app.startsWith('macgyver') && !options.showMacgyver) return []
-
-            const app = { id: `${it.app}-app`, label: `${it.app}`, group: it.namespace, shape: 'box' }
-
-            if (it.databases) {
-                return [
-                    app,
-                    ...it.databases.map((db) => {
-                        const [first] = db.databases
-                        return {
-                            id: `${first}-db`,
-                            font: { size: 12 },
-                            label: `${first}`,
-                            shape: 'hexagon',
-                            icon: { code: '\uf1c0' },
-                            parent: `${it.app}-app`,
-                        }
-                    }),
-                ]
-            }
-
-            return [app]
-        }),
-    )
-
+    const teamSykmeldingAppNodes = getTeamSykmeldingAppNodes(cluster.applications, options)
     const appIngressEdges = R.pipe(
         cluster.applications,
         R.filter((it) => it.ingress),
@@ -228,12 +196,12 @@ async function updateGraph(options) {
             ...topic.dependencies.read.map((it) => ({
                 from: `${it.application}-app`,
                 to: `${topic.topic}-topic`,
-                arrows: { to: { enabled: true } },
+                arrows: { from: { enabled: true } },
             })),
             ...topic.dependencies.write.map((it) => ({
                 from: `${topic.topic}-topic`,
                 to: `${it.application}-app`,
-                arrows: { to: { enabled: true } },
+                arrows: { from: { enabled: true } },
             })),
         ]),
     )
