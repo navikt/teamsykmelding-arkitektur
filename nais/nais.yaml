@@ -1,0 +1,27 @@
+apiVersion: 'nais.io/v1alpha1'
+kind: 'Application'
+metadata:
+  name: teamsykmelding-arkitektur
+  namespace: teamsykmelding
+  labels:
+    team: teamsykmelding
+spec:
+  image: {{image}}
+  port: 3000
+  ingresses:
+    - 'https://teamsykmelding-arkitektur.ekstern.dev.nav.no'
+  replicas:
+    min: 1
+    max: 1
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 5m
+      memory: 256Mi
+  liveness:
+    path: /internal/is_alive
+    initialDelay: 10
+  readiness:
+    path: /internal/is_ready
+    initialDelay: 10

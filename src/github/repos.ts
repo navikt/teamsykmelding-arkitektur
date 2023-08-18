@@ -6,6 +6,8 @@ const blacklist = [
     'syfo-generator-ktor',
     // Has a lot of workflows that confuses the parsing
     'teamsykmelding-github-actions-workflows',
+    // This repo
+    'teamsykmelding-arkitektur',
 ]
 
 const teamReposQuery = /* GraphQL */ `

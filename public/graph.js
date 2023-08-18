@@ -70,6 +70,7 @@ const externalNodes = R.pipe(
             id: `${it.host}-app`,
             label: it.host,
             group: 'external-app',
+            shape: 'box',
         })),
     ),
     R.uniqBy((it) => it.id),
