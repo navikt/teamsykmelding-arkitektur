@@ -6,7 +6,16 @@ export function getTeamSykmeldingAppNodes(applications, options) {
         R.flatMap((it) => {
             if (it.app.startsWith('macgyver') && !options.showMacgyver) return []
 
-            const app = { id: `${it.app}-app`, label: `${it.app}`, group: it.namespace, shape: 'box' }
+            const app = {
+                id: `${it.app}-app`,
+                label: `${namespaceToEmoji('teamsykmelding')} ${it.app}`,
+                group: it.namespace,
+                shape: 'box',
+                font: {
+                    face: 'monospace',
+                    align: 'left',
+                },
+            }
 
             if (it.databases) {
                 return [
@@ -15,11 +24,14 @@ export function getTeamSykmeldingAppNodes(applications, options) {
                         const [first] = db.databases
                         return {
                             id: `${first}-db`,
-                            font: { size: 12 },
                             label: `${first}`,
                             shape: 'hexagon',
                             icon: { code: '\uf1c0' },
                             parent: `${it.app}-app`,
+                            font: {
+                                face: 'monospace',
+                                align: 'left',
+                            },
                         }
                     }),
                 ]
@@ -62,7 +74,7 @@ export function getTeamsykmeldingKafkaTopicNodes(topics) {
         topics,
         R.map((it) => ({
             id: `${it.topic}-topic`,
-            label: it.topic,
+            label: `${namespaceToEmoji('teamsykmelding')} ${it.topic}`,
             group: 'teamsykmelding-topic',
             shape: 'box',
         })),
@@ -92,7 +104,7 @@ export function getOtherTeamAppNodes(applications, topics, options, toggleMetada
         R.uniqBy((it) => it.application),
         R.map((it) => ({
             id: `${it.application}-app`,
-            label: `${it.namespace}\n${it.application}`,
+            label: `${namespaceToEmoji(it.namespace)} ${it.namespace}\n${it.application}`,
             group: it.namespace,
             shape: 'box',
             font: {
@@ -153,8 +165,6 @@ export function getAccessPolicyEdges(applications) {
         R.partition((it) => it[1].length === 1),
     )
 
-    console.log([simplexEdges, duplexEdges])
-
     return [
         ...simplexEdges.flatMap(([, edges]) => edges),
         ...duplexEdges.map(([, edges]) => ({
@@ -194,4 +204,18 @@ export function createMacgyverNodes(applications) {
     const macgyverApps = applications.filter((it) => it.app.startsWith('macgyver'))
 
     return getTeamSykmeldingAppNodes(macgyverApps, { showMacgyver: true })
+}
+
+function namespaceToEmoji(namespace) {
+    switch (namespace) {
+        case 'teamsykmelding':
+            return '💉'
+        case 'flex':
+            return '💪'
+        case 'team-esyfo':
+            return '🫂'
+        default:
+            console.log('Uknonwn namespace', namespace)
+            return ''
+    }
 }
