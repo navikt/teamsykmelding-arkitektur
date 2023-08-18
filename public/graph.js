@@ -147,7 +147,8 @@ document.getElementById('show-kafka').addEventListener('click', (event) => {
         nodes.remove(toggleMetadata.kafkaIds.nodes)
         toggleMetadata.kafkaIds.nodes = []
     } else {
-        updateGraph(defaultOptions)
+        setButtonDisabledness(true)
+        updateGraph(defaultOptions).finally(() => setButtonDisabledness(false))
     }
 })
 
@@ -159,7 +160,8 @@ document.getElementById('show-external').addEventListener('click', (event) => {
         nodes.remove(toggleMetadata.externalIds.nodes)
         toggleMetadata.externalIds.nodes = []
     } else {
-        updateGraph(defaultOptions)
+        setButtonDisabledness(true)
+        updateGraph(defaultOptions).finally(() => setButtonDisabledness(false))
     }
 })
 
@@ -170,6 +172,13 @@ document.getElementById('show-macgyver').addEventListener('click', (event) => {
     if (!defaultOptions.showMacgyver) {
         nodes.remove(['macgyver-frontend-app', 'macgyver-app'])
     } else {
-        updateGraph(defaultOptions)
+        setButtonDisabledness(true)
+        updateGraph(defaultOptions).finally(() => setButtonDisabledness(false))
     }
 })
+
+function setButtonDisabledness(disabled) {
+    document.getElementById('show-kafka').disabled = disabled
+    document.getElementById('show-external').disabled = disabled
+    document.getElementById('show-macgyver').disabled = disabled
+}
