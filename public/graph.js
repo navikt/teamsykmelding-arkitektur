@@ -64,13 +64,13 @@ async function updateGraph(options) {
     if (options.showKafka) {
         const teamSykmeldingTopicNodes = getTeamsykmeldingKafkaTopicNodes(cluster.topics)
 
-        toggleMetadata.kafkaIds.nodes = teamSykmeldingTopicNodes.map((it) => it.id)
+        toggleMetadata.kafkaIds.nodes.push(...teamSykmeldingTopicNodes.map((it) => it.id))
 
         nodes.add(teamSykmeldingTopicNodes)
         await wait(500)
     }
 
-    const otherAppNodes = getOtherTeamAppNodes(cluster.applications, cluster.topics, options)
+    const otherAppNodes = getOtherTeamAppNodes(cluster.applications, cluster.topics, options, toggleMetadata)
     nodes.add(otherAppNodes)
     await wait(500)
 

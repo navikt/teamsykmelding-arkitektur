@@ -69,7 +69,7 @@ export function getTeamsykmeldingKafkaTopicNodes(topics) {
     )
 }
 
-export function getOtherTeamAppNodes(applications, topics, options) {
+export function getOtherTeamAppNodes(applications, topics, options, toggleMetadata) {
     const otherAppDeps = R.pipe(
         applications,
         R.flatMap((it) => [...it.dependencies.outbound, ...it.dependencies.inbound]),
@@ -84,6 +84,8 @@ export function getOtherTeamAppNodes(applications, topics, options) {
               R.filter((it) => it.namespace !== 'teamsykmelding'),
           )
         : []
+
+    toggleMetadata.kafkaIds.nodes.push(...otherTopicDeps.map((it) => `${it.application}-app`))
 
     return R.pipe(
         [...otherAppDeps, ...otherTopicDeps],
