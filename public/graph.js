@@ -138,6 +138,18 @@ updateGraph(defaultOptions)
 
 network.on('click', function (params) {
     console.log(params)
+    const node = document.getElementById('focus-info')
+    if (params.nodes.length > 0) {
+        const app = cluster.applications.find((it) => `${it.app}-app` === params.nodes[0])
+        node.setAttribute('data-focused', 'true')
+        node.innerHTML = `
+        <pre>${params.nodes}</pre>
+        ${app ? `<pre>${JSON.stringify(app, null, 2)}</pre>` : ''}
+      `
+    } else {
+        document.getElementById('focus-info').setAttribute('data-focused', 'false')
+        node.innerHTML = ''
+    }
 })
 
 document.getElementById('show-kafka').addEventListener('click', (event) => {

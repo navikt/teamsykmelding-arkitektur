@@ -51,6 +51,34 @@
             #network-graph {
                 height: calc(100vh - var(--a-spacing-16));
             }
+
+            #focus-info {
+                width: 360px;
+                height: 240px;
+                position: absolute;
+                bottom: 8px;
+                right: 8px;
+                background-color: var(--a-white);
+                border: 1px solid var(--a-border-subtle);
+                padding: var(--a-spacing-4);
+                transition: height 0.36s cubic-bezier(0.04, 1.04, 0.18, 1.18), opacity 0.2s ease-in-out;
+                overflow: auto;
+            }
+
+            #focus-info pre {
+                padding: 0;
+                margin: 0;
+            }
+
+            #focus-info[data-focused='true'] {
+                height: 240px;
+                opacity: 1;
+            }
+
+            #focus-info[data-focused='false'] {
+                height: 0;
+                opacity: 0;
+            }
         </style>
     </head>
     <body>
@@ -75,6 +103,7 @@
                 </div>
             </div>
             <div id="network-graph"></div>
+            <div id="focus-info" data-focused="false"></div>
         </main>
         <script src="/data/graph-data.js"></script>
         <script src="/graph.js" type="module"></script>
