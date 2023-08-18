@@ -5,20 +5,12 @@ import { gitOutputDir } from '../git/git.ts'
 import { analyzeApp } from './analyze.ts'
 import { AppMetadata, DependencyGraphResult, TopicMetadata } from './types.ts'
 
-
 export async function buildDependencyGraph({ cache }: { cache: boolean }): Promise<DependencyGraphResult> {
     if (cache) {
-        const bunFile = Bun.file(path.join(gitOutputDir, 'graph.json'))
-
-        if (!(await bunFile.exists())) {
-            console.error('Cache metadata does not exist, run without --cache flag first')
-            process.exit(1)
-        }
-
-        console.info('Using cached dependency graph')
-        return await bunFile.json<DependencyGraphResult>()
+        return await getCachedDependencyGraphFile()
     }
 
+    console.info('Building dependency graph')
     const folders = await fs.promises.readdir(gitOutputDir)
     const envToMetadataTuples: [string, AppMetadata | TopicMetadata][] = (await Promise.all(folders.map(analyzeApp)))
         .filter((it) => it.length > 0)
@@ -45,7 +37,21 @@ export async function buildDependencyGraph({ cache }: { cache: boolean }): Promi
 
     await Bun.write(path.join(gitOutputDir, 'graph.json'), JSON.stringify(result, null, 2))
 
+    console.log('Wrote cache to graph.json')
+
     return result
+}
+
+export async function getCachedDependencyGraphFile(): Promise<DependencyGraphResult> {
+    const bunFile = Bun.file(path.join(gitOutputDir, 'graph.json'))
+
+    if (!(await bunFile.exists())) {
+        console.error('Cache metadata does not exist, run without --cache flag first')
+        process.exit(1)
+    }
+
+    console.info('Using cached dependency graph')
+    return await bunFile.json<DependencyGraphResult>()
 }
 
 function getForEnv(what: 'app', cluster: string, appTuples: [string, AppMetadata | TopicMetadata][]): AppMetadata[]
