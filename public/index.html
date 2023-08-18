@@ -24,12 +24,24 @@
         <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
         <style>
-            header {
+            .header {
                 display: flex;
                 align-items: center;
                 border-bottom: 1px solid var(--a-border-subtle);
                 padding: var(--a-spacing-2) var(--a-spacing-4);
                 height: var(--a-spacing-16);
+            }
+
+            .button-box {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-left: 32px;
+            }
+
+            .button-box > div {
+                display: flex;
+                gap: 8px;
             }
 
             #network-graph {
@@ -39,9 +51,25 @@
     </head>
     <body>
         <main id="maincontent" role="main" tabIndex="{-1}">
-            <header>
-                <h1 class="navds-heading navds-heading--large">Teamsykmelding Arkitektur</h1>
-            </header>
+            <div class="header">
+                <header>
+                    <h1 class="navds-heading navds-heading--large">Teamsykmelding Arkitektur</h1>
+                </header>
+                <div class="button-box">
+                    <div>
+                        <input id="show-kafka" type="checkbox" checked />
+                        <label for="show-kafka">Vis Kafka</label>
+                    </div>
+                    <div>
+                        <input id="show-macgyver" type="checkbox" />
+                        <label for="show-macgyver">Vis MacGyver</label>
+                    </div>
+                    <div>
+                        <input id="show-external" type="checkbox" />
+                        <label for="show-external">Vis eksterne</label>
+                    </div>
+                </div>
+            </div>
             <div id="network-graph"></div>
         </main>
         <script src="/data/graph-data.js"></script>
