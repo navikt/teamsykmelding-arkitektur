@@ -149,6 +149,11 @@ export function getTopicEdges(topics) {
     return R.pipe(
         topics,
         R.flatMap((topic) => [
+            ...topic.dependencies.readwrite.map((it) => ({
+                from: `${it.application}-app`,
+                to: `${topic.topic}-topic`,
+                arrows: { from: { enabled: true }, to: { enabled: true } },
+            })),
             ...topic.dependencies.read.map((it) => ({
                 from: `${it.application}-app`,
                 to: `${topic.topic}-topic`,
@@ -161,4 +166,10 @@ export function getTopicEdges(topics) {
             })),
         ]),
     )
+}
+
+export function createMacgyverNodes(applications) {
+    const macgyverApps = applications.filter((it) => it.app.startsWith('macgyver'))
+
+    return getTeamSykmeldingAppNodes(macgyverApps, { showMacgyver: true })
 }

@@ -38,6 +38,7 @@ export type TopicMetadata = {
     topic: string
     namespace: string
     dependencies: {
+        readwrite: TopicDependency[]
         write: TopicDependency[]
         read: TopicDependency[]
     }

@@ -1,4 +1,5 @@
 import {
+    createMacgyverNodes,
     getAccessPolicyEdges,
     getAppIngressEdges,
     getDatabaseToAppEdges,
@@ -172,8 +173,7 @@ document.getElementById('show-macgyver').addEventListener('click', (event) => {
     if (!defaultOptions.showMacgyver) {
         nodes.remove(['macgyver-frontend-app', 'macgyver-app'])
     } else {
-        setButtonDisabledness(true)
-        updateGraph(defaultOptions).finally(() => setButtonDisabledness(false))
+        nodes.add(createMacgyverNodes(cluster.applications))
     }
 })
 

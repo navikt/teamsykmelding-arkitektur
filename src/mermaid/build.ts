@@ -70,10 +70,14 @@ function createTopicNode(topic: TopicMetadata) {
 }
 
 function createTopicConnections(topic: TopicMetadata) {
+    const readwrite = topic.dependencies.readwrite
+        .map((it) => `${topic.topic}-topic <--> ${it.application}-app`)
+        .join('\n    ')
     const read = topic.dependencies.read.map((it) => `${topic.topic}-topic --> ${it.application}-app`).join('\n    ')
     const write = topic.dependencies.write.map((it) => `${it.application}-app --> ${topic.topic}-topic`).join('\n    ')
 
     return `
+    ${readwrite}
     ${read}
     ${write}`
 }

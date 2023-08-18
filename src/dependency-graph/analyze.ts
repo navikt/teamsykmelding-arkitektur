@@ -106,8 +106,9 @@ function createTopicDependencies(spec: NaisTopicSchema['spec']) {
         ({ application: it.application, namespace: it.team }) satisfies TopicDependency
 
     return {
-        read: spec.acl.filter((it) => it.access.includes('read')).map(toTopicDependency) ?? [],
-        write: spec.acl.filter((it) => it.access.includes('write')).map(toTopicDependency) ?? [],
+        readwrite: spec.acl.filter((it) => it.access === 'readwrite').map(toTopicDependency) ?? [],
+        read: spec.acl.filter((it) => it.access === 'read').map(toTopicDependency) ?? [],
+        write: spec.acl.filter((it) => it.access === 'write').map(toTopicDependency) ?? [],
     }
 }
 
