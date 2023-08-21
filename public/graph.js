@@ -38,7 +38,7 @@ const toggleMetadata = {
     },
 }
 
-const appMetadata = createAppMetadataMap()
+let appMetadata = createAppMetadataMap(getCluster(defaultOptions.cluster))
 
 const baseUsers = [
     { id: 'user', label: 'Bruker', group: 'user' },
@@ -208,6 +208,7 @@ document.getElementById('cluster').addEventListener('change', async (event) => {
 
     await initializeGraph(defaultOptions)
     updateOptions(nodes)
+    appMetadata = createAppMetadataMap(getCluster(defaultOptions.cluster))
 })
 
 document.getElementById('app-picker').addEventListener('input', async (event) => {

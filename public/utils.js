@@ -29,16 +29,14 @@ export function getCluster(name) {
     return window.graph[name]
 }
 
-export function createAppMetadataMap() {
+export function createAppMetadataMap(cluster) {
     const map = new Map()
 
-    Object.entries(window.graph).forEach(([clusterName, cluster]) => {
-        cluster.applications.forEach((app) => {
-            map.set(`${app.app}-app`, { repoUrl: app.repoUrl })
-        })
-        cluster.topics.forEach((topic) => {
-            map.set(`${topic.topic}-topic`, { fileUrl: topic.fileUrl })
-        })
+    cluster.applications.forEach((app) => {
+        map.set(`${app.app}-app`, { repoUrl: app.repoUrl })
+    })
+    cluster.topics.forEach((topic) => {
+        map.set(`${topic.topic}-topic`, { fileUrl: topic.fileUrl })
     })
 
     return map
