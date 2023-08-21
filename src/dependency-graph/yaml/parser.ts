@@ -38,13 +38,15 @@ export type NaisOther = {
 
 export type WorkingFiles = NaisApplication | NaisTopic | GithubAction | NaisOther
 
-export async function parseYaml(file: string): Promise<(WorkingFiles | null)[]> {
-    const content = await Bun.file(file).text()
+export const parseYaml =
+    (repo: string) =>
+    async (file: string): Promise<(WorkingFiles | null)[]> => {
+        const content = await Bun.file(file).text()
 
-    return await Promise.all(compact(content.split('---')).map((section) => parseYamlDocument(file, section)))
-}
+        return await Promise.all(compact(content.split('---')).map((section) => parseYamlDocument(repo, file, section)))
+    }
 
-async function parseYamlDocument(file: string, content: string): Promise<WorkingFiles | null> {
+async function parseYamlDocument(repo: string, file: string, content: string): Promise<WorkingFiles | null> {
     try {
         const yaml = load(content.replace('{{appname}}', '<app>')) as
             | NaisSchema
@@ -52,7 +54,11 @@ async function parseYamlDocument(file: string, content: string): Promise<Working
             | NaisTopicSchema
             | NaisJobSchema
 
-        const fileWithExtension = file.split('/').at(-1) ?? raise("Filename doesn't make sense")
+        const fileWithExtension =
+            file
+                .replace(repo, '')
+                // Remove only leading slashes
+                .replace(/^\/+/, '') ?? raise("Filename doesn't make sense")
         if ('apiVersion' in yaml && yaml.kind === 'Application') {
             return {
                 type: 'app',

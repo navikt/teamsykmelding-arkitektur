@@ -12,17 +12,17 @@ import { NaisSchema } from './yaml/schemas/nais-schema.ts'
 import { AppMetadata, IngressMetadata, TopicDependency, TopicMetadata } from './types.ts'
 import { NaisTopicSchema } from './yaml/schemas/nais-topic-schema.ts'
 
-export async function analyzeApp(repoDir: string): Promise<[string, AppMetadata | TopicMetadata][]> {
-    const dir = path.join(gitOutputDir, repoDir)
+export async function analyzeApp(repoName: string): Promise<[string, AppMetadata | TopicMetadata][]> {
+    const absoluteRepoDirectory = path.join(gitOutputDir, repoName)
 
-    if (!(await fs.promises.exists(dir))) {
-        throw new Error(`Unable to find repo ${dir}`)
+    if (!(await fs.promises.exists(absoluteRepoDirectory))) {
+        throw new Error(`Unable to find repo ${absoluteRepoDirectory}`)
     }
 
     // All nais and GitHub workflow yamls, other files should be ignored during the parsing step
-    const relevantFiles = (await globDirForYaml(dir)).filter((it) => !it.includes('demo'))
+    const relevantFiles = (await globDirForYaml(absoluteRepoDirectory)).filter((it) => !it.includes('demo'))
     // All files are parsed into memory once
-    const files = (await Promise.all(relevantFiles.map(parseYaml))).flat().filter(notNull)
+    const files = (await Promise.all(relevantFiles.map(parseYaml(absoluteRepoDirectory)))).flat().filter(notNull)
 
     // Each GitHub workflow is parsed, extracts the corresponding nais file and the environment it is deployed to
     return createApplicationMetadata(files)

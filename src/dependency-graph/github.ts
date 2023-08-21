@@ -9,8 +9,8 @@ export function getEnvironmentNaisTuple(file: GithubActionsSchema): GithubDeduce
     if ('uses' in firstJob && firstJob?.uses?.includes('teamsykmelding-github-actions-workflows')) {
         if (firstJob.uses.includes('next-app')) {
             return [
-                ['dev-gcp', 'nais-dev.yaml'],
-                ['prod-gcp', 'nais-prod.yaml'],
+                ['dev-gcp', 'nais/nais-dev.yaml'],
+                ['prod-gcp', 'nais/nais-prod.yaml'],
             ]
         }
 
@@ -42,10 +42,7 @@ export function getEnvironmentNaisTuple(file: GithubActionsSchema): GithubDeduce
         return null
     }
 
-    return naisJobs.map(([env, resource]) => [
-        env,
-        resource.split('/').at(-1) ?? raise(`Weird format on resource name: ${resource}`),
-    ])
+    return naisJobs
 }
 
 function extractClusterResourcesTuple(env: Record<string, string | number | boolean> | string | undefined) {
