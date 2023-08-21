@@ -18,3 +18,8 @@ export function updateUrl(options) {
     setIfTrue('external', options.showExternal)
     window.history.replaceState({}, '', url)
 }
+
+export function getCluster(name) {
+    console.log('cluster', name, window.graph[name])
+    return window.graph[name]
+}

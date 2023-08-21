@@ -61,7 +61,9 @@
                 background-color: var(--a-white);
                 border: 1px solid var(--a-border-subtle);
                 padding: var(--a-spacing-4);
-                transition: height 0.36s cubic-bezier(0.04, 1.04, 0.18, 1.18), opacity 0.2s ease-in-out;
+                transition:
+                    height 0.36s cubic-bezier(0.04, 1.04, 0.18, 1.18),
+                    opacity 0.2s ease-in-out;
                 overflow: auto;
             }
 
@@ -88,6 +90,13 @@
                     <h1 class="navds-heading navds-heading--large">Teamsykmelding Arkitektur</h1>
                 </header>
                 <div class="button-box">
+                    <label for="cluster">Cluster</label>
+                    <select id="cluster">
+                        <option>prod-gcp</option>
+                        <option>dev-gcp</option>
+                        <option>prod-fss</option>
+                        <option>dev-fss</option>
+                    </select>
                     <div>
                         <input id="show-kafka" type="checkbox" checked />
                         <label for="show-kafka">Vis Kafka</label>

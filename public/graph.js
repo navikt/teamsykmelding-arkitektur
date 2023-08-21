@@ -9,7 +9,7 @@ import {
     getTeamsykmeldingKafkaTopicNodes,
     getTopicEdges,
 } from './graph-utils.js'
-import { updateUrl, wait } from './utils.js'
+import { getCluster, updateUrl, wait } from './utils.js'
 
 const params = new URLSearchParams(window.location.search)
 
@@ -23,8 +23,6 @@ const defaultOptions = {
 document.getElementById('show-kafka').checked = defaultOptions.showKafka
 document.getElementById('show-external').checked = defaultOptions.showExternal
 document.getElementById('show-macgyver').checked = defaultOptions.showMacgyver
-
-const cluster = window.graph['prod-gcp']
 
 const nodes = new vis.DataSet()
 const edges = new vis.DataSet()
@@ -46,6 +44,8 @@ const baseUsers = [
 ]
 
 async function initializeGraph(options) {
+    const cluster = getCluster(options.cluster)
+
     nodes.clear()
     edges.clear()
 
@@ -140,10 +140,9 @@ const network = new vis.Network(
 initializeGraph(defaultOptions)
 
 network.on('click', function (params) {
-    console.log(params)
     const node = document.getElementById('focus-info')
     if (params.nodes.length > 0) {
-        const app = cluster.applications.find((it) => `${it.app}-app` === params.nodes[0])
+        const app = getCluster(defaultOptions).applications.find((it) => `${it.app}-app` === params.nodes[0])
         node.setAttribute('data-focused', 'true')
         node.innerHTML = `
         <pre>${params.nodes}</pre>
@@ -176,7 +175,7 @@ document.getElementById('show-external').addEventListener('click', (event) => {
         nodes.remove(toggleMetadata.externalIds.nodes)
         toggleMetadata.externalIds.nodes = []
     } else {
-        const externalNodes = getExternalNodes(cluster.applications)
+        const externalNodes = getExternalNodes(getCluster(defaultOptions).applications)
 
         toggleMetadata.externalIds.nodes = externalNodes.map((it) => it.id)
 
@@ -191,8 +190,15 @@ document.getElementById('show-macgyver').addEventListener('click', (event) => {
     if (!defaultOptions.showMacgyver) {
         nodes.remove(['macgyver-frontend-app', 'macgyver-app'])
     } else {
-        nodes.add(createMacgyverNodes(cluster.applications))
+        nodes.add(createMacgyverNodes(getCluster(defaultOptions).applications))
     }
+})
+
+document.getElementById('cluster').addEventListener('change', (event) => {
+    defaultOptions.cluster = event.currentTarget.value
+    updateUrl(defaultOptions)
+
+    initializeGraph(defaultOptions)
 })
 
 function setButtonDisabledness(disabled) {
