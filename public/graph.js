@@ -9,7 +9,7 @@ import {
     getTeamsykmeldingKafkaTopicNodes,
     getTopicEdges,
 } from './graph-utils.js'
-import { getCluster, updateUrl, wait } from './utils.js'
+import { getCluster, updateOptions, updateUrl, wait } from './utils.js'
 
 const params = new URLSearchParams(window.location.search)
 
@@ -137,7 +137,9 @@ const network = new vis.Network(
     },
 )
 
-initializeGraph(defaultOptions)
+initializeGraph(defaultOptions).then(() => {
+    updateOptions(nodes)
+})
 
 network.on('click', function (params) {
     const node = document.getElementById('focus-info')
@@ -195,11 +197,21 @@ document.getElementById('show-macgyver').addEventListener('click', (event) => {
     }
 })
 
-document.getElementById('cluster').addEventListener('change', (event) => {
+document.getElementById('cluster').addEventListener('change', async (event) => {
     defaultOptions.cluster = event.currentTarget.value
     updateUrl(defaultOptions)
 
-    initializeGraph(defaultOptions)
+    await initializeGraph(defaultOptions)
+    updateOptions(nodes)
+})
+
+document.getElementById('app-picker').addEventListener('input', async (event) => {
+    const value = event.currentTarget.value?.trim()
+    if (!value) return
+    if (nodes.get(value) == null) return
+
+    network.focus(value, { scale: 1 })
+    network.setSelection({ nodes: [value] })
 })
 
 function setButtonDisabledness(disabled) {

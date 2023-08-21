@@ -19,6 +19,14 @@ export function updateUrl(options) {
     window.history.replaceState({}, '', url)
 }
 
+export function updateOptions(nodes) {
+    console.log(nodes)
+
+    document.getElementById('apps').innerHTML = `
+    ${nodes.map((node) => `<option value="${node.id}">${node.label}</option>`).join('')}
+  `
+}
+
 export function getCluster(name) {
     return window.graph[name]
 }

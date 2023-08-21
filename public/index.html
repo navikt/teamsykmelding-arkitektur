@@ -29,7 +29,7 @@
                 align-items: center;
                 border-bottom: 1px solid var(--a-border-subtle);
                 padding: var(--a-spacing-2) var(--a-spacing-4);
-                height: var(--a-spacing-16);
+                height: var(--a-spacing-20);
             }
 
             .button-box {
@@ -67,6 +67,35 @@
                 overflow: auto;
             }
 
+            .header-option {
+                display: flex;
+                flex-direction: column;
+                height: 54px;
+            }
+
+            .header-option label,
+            .filter-fieldset legend {
+                font-size: 14px;
+                margin-bottom: -6px;
+            }
+
+            .filter-fieldset {
+                display: flex;
+                gap: 8px;
+                border: none;
+                padding: 0;
+                height: 54px;
+            }
+
+            .filter-fieldset > div {
+                display: flex;
+                align-items: center;
+            }
+
+            .filter-fieldset input[type='checkbox'] {
+                margin-right: 8px;
+            }
+
             #focus-info pre {
                 padding: 0;
                 margin: 0;
@@ -90,24 +119,34 @@
                     <h1 class="navds-heading navds-heading--large">Teamsykmelding Arkitektur</h1>
                 </header>
                 <div class="button-box">
-                    <label for="cluster">Cluster</label>
-                    <select id="cluster">
-                        <option>prod-gcp</option>
-                        <option>dev-gcp</option>
-                        <option>prod-fss</option>
-                        <option>dev-fss</option>
-                    </select>
-                    <div>
-                        <input id="show-kafka" type="checkbox" checked />
-                        <label for="show-kafka">Vis Kafka</label>
+                    <div class="header-option">
+                        <label for="cluster">Cluster</label>
+                        <select id="cluster">
+                            <option>prod-gcp</option>
+                            <option>dev-gcp</option>
+                            <option>prod-fss</option>
+                            <option>dev-fss</option>
+                        </select>
                     </div>
-                    <div>
-                        <input id="show-macgyver" type="checkbox" />
-                        <label for="show-macgyver">Vis MacGyver</label>
-                    </div>
-                    <div>
-                        <input id="show-external" type="checkbox" />
-                        <label for="show-external">Vis eksterne</label>
+                    <fieldset class="filter-fieldset">
+                        <legend>Filter</legend>
+                        <div>
+                            <input id="show-kafka" type="checkbox" checked />
+                            <label for="show-kafka">Vis Kafka</label>
+                        </div>
+                        <div>
+                            <input id="show-macgyver" type="checkbox" />
+                            <label for="show-macgyver">Vis MacGyver</label>
+                        </div>
+                        <div>
+                            <input id="show-external" type="checkbox" />
+                            <label for="show-external">Vis eksterne</label>
+                        </div>
+                    </fieldset>
+                    <div class="header-option">
+                        <label for="app-picker">Finn node</label>
+                        <input id="app-picker" list="apps" />
+                        <datalist id="apps"> </datalist>
                     </div>
                 </div>
             </div>
