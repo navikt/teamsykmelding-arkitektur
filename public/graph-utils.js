@@ -15,6 +15,9 @@ export function getTeamSykmeldingAppNodes(applications, options) {
                     face: 'monospace',
                     align: 'left',
                 },
+                randomMetadata: {
+                    mordi: true,
+                },
             }
 
             if (it.databases) {

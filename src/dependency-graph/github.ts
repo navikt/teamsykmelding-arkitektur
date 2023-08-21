@@ -1,42 +1,47 @@
 import { GithubActionsSchema, NormalJob } from './yaml/schemas/gha-schema.ts'
 import { notNull, raise } from '../utils.ts'
 
-export type GithubDeducedEnvironmentNaisFileTuple = [environment: string, naisFile: string]
+export type GithubDeducedEnvironmentNaisFileTuple = [environment: string, naisFile: string, repoUrl: string]
 
-export function getEnvironmentNaisTuple(file: GithubActionsSchema): GithubDeducedEnvironmentNaisFileTuple[] | null {
+export function getEnvironmentNaisTuple(
+    file: GithubActionsSchema,
+    repoUrl: string,
+): GithubDeducedEnvironmentNaisFileTuple[] | null {
     const jobKeys = Object.keys(file.jobs)
     const firstJob = file.jobs[jobKeys[0]]
     if ('uses' in firstJob && firstJob?.uses?.includes('teamsykmelding-github-actions-workflows')) {
         if (firstJob.uses.includes('next-app')) {
             return [
-                ['dev-gcp', 'nais/nais-dev.yaml'],
-                ['prod-gcp', 'nais/nais-prod.yaml'],
+                ['dev-gcp', 'nais/nais-dev.yaml', repoUrl],
+                ['prod-gcp', 'nais/nais-prod.yaml', repoUrl],
             ]
         }
 
         if (firstJob.uses.includes('redis.yaml')) {
             return [
-                ['dev-gcp', 'redis.yaml'],
-                ['prod-gcp', 'redis.yaml'],
+                ['dev-gcp', 'redis.yaml', repoUrl],
+                ['prod-gcp', 'redis.yaml', repoUrl],
             ]
         }
 
         if (firstJob.uses.includes('jar-app.yaml')) {
             return [
-                ['dev-gcp', 'naiserator-dev.yaml'],
-                ['prod-gcp', 'naiserator-prod.yaml'],
+                ['dev-gcp', 'naiserator-dev.yaml', repoUrl],
+                ['prod-gcp', 'naiserator-prod.yaml', repoUrl],
             ]
         }
 
         raise(`Unknown shared workflow: ${firstJob.uses}`)
     }
 
-    const naisJobs: [env: string, naiserator: string][] = Object.values(file.jobs)
+    const naisJobs: GithubDeducedEnvironmentNaisFileTuple[] = Object.values(file.jobs)
         .filter((job): job is NormalJob => 'runs-on' in job)
         .filter((job) => job.steps?.filter((step) => step.uses?.startsWith('nais/deploy/actions/deploy')))
         .flatMap(extractClusterResourcesTuple(file.env))
         .filter(notNull)
-        .flatMap(([env, resource]) => resource.split(',').map((it) => [env, it] as [string, string]))
+        .flatMap(([env, resource]) =>
+            resource.split(',').map((it): GithubDeducedEnvironmentNaisFileTuple => [env, it, repoUrl]),
+        )
 
     if (!naisJobs.length) {
         return null

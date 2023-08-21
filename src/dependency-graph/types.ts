@@ -24,6 +24,7 @@ export type AppMetadata = {
     namespace: string
     ingress: IngressMetadata | null
     databases: DatabaseMetadata[] | null
+    repoUrl: string | null
     dependencies: {
         inbound: (InterTeamAppDependency | AppDependency)[]
         outbound: (InterTeamAppDependency | AppDependency)[]

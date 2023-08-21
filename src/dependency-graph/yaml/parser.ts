@@ -25,6 +25,7 @@ export type GithubAction = {
     type: 'action'
     filename: string
     absolutePath: string
+    repoUrl: string
     action: GithubActionsSchema
 }
 
@@ -39,14 +40,20 @@ export type NaisOther = {
 export type WorkingFiles = NaisApplication | NaisTopic | GithubAction | NaisOther
 
 export const parseYaml =
-    (repo: string) =>
+    (absoluteRepoPath: string) =>
     async (file: string): Promise<(WorkingFiles | null)[]> => {
         const content = await Bun.file(file).text()
 
-        return await Promise.all(compact(content.split('---')).map((section) => parseYamlDocument(repo, file, section)))
+        return await Promise.all(
+            compact(content.split('---')).map((section) => parseYamlDocument(absoluteRepoPath, file, section)),
+        )
     }
 
-async function parseYamlDocument(repo: string, file: string, content: string): Promise<WorkingFiles | null> {
+async function parseYamlDocument(
+    absoluteRepoPath: string,
+    file: string,
+    content: string,
+): Promise<WorkingFiles | null> {
     try {
         const yaml = load(content.replace('{{appname}}', '<app>')) as
             | NaisSchema
@@ -56,7 +63,7 @@ async function parseYamlDocument(repo: string, file: string, content: string): P
 
         const fileWithExtension =
             file
-                .replace(repo, '')
+                .replace(absoluteRepoPath, '')
                 // Remove only leading slashes
                 .replace(/^\/+/, '') ?? raise("Filename doesn't make sense")
         if ('apiVersion' in yaml && yaml.kind === 'Application') {
@@ -73,6 +80,7 @@ async function parseYamlDocument(repo: string, file: string, content: string): P
                 type: 'action',
                 filename: fileWithExtension,
                 absolutePath: file,
+                repoUrl: `https://github.com/navikt/${absoluteRepoPath.split('/').slice(-1)}`,
                 action: yaml,
             } satisfies GithubAction
         } else if (yaml.kind) {

@@ -9,7 +9,7 @@ import {
     getTeamsykmeldingKafkaTopicNodes,
     getTopicEdges,
 } from './graph-utils.js'
-import { getCluster, updateOptions, updateUrl, wait } from './utils.js'
+import { createAppMetadataMap, getCluster, updateOptions, updateUrl, wait } from './utils.js'
 
 const params = new URLSearchParams(window.location.search)
 
@@ -37,6 +37,8 @@ const toggleMetadata = {
         edges: [],
     },
 }
+
+const appMetadata = createAppMetadataMap()
 
 const baseUsers = [
     { id: 'user', label: 'Bruker', group: 'user' },
@@ -142,6 +144,7 @@ initializeGraph(defaultOptions).then(() => {
 })
 
 network.on('click', function (params) {
+    const metadata = appMetadata.get(params.nodes[0])
     const node = document.getElementById('focus-info')
     if (params.nodes.length > 0) {
         const cluster = getCluster(defaultOptions.cluster)
@@ -149,6 +152,7 @@ network.on('click', function (params) {
         node.setAttribute('data-focused', 'true')
         node.innerHTML = `
         <pre>${params.nodes}</pre>
+        ${metadata ? `<a href="${metadata.repoUrl}" target="_blank">Github</a>` : ''}
         ${app ? `<pre>${JSON.stringify(app, null, 2)}</pre>` : ''}
       `
     } else {
@@ -210,7 +214,7 @@ document.getElementById('app-picker').addEventListener('input', async (event) =>
     if (!value) return
     if (nodes.get(value) == null) return
 
-    network.focus(value, { scale: 1 })
+    network.focus(value, { scale: 1, animation: true })
     network.setSelection({ nodes: [value] })
 })
 

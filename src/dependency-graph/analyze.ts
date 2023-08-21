@@ -34,8 +34,7 @@ function createApplicationMetadata(relevantFiles: WorkingFiles[]): [string, AppM
     const naisJobs = relevantFiles.filter((it): it is NaisOther => it.type === 'other')
     const githubWorkflows = relevantFiles.filter((it): it is GithubAction => it.type === 'action')
     const environments = githubWorkflows
-        .map((it) => it.action)
-        .map(getEnvironmentNaisTuple)
+        .map((it) => getEnvironmentNaisTuple(it.action, it.repoUrl))
         .filter(notNull)
         .flat()
 
@@ -65,7 +64,7 @@ function createIngressMetadata(spec: NaisSchema['spec']): IngressMetadata | null
 
 function createAppMetadataForEnv(
     naiserators: (NaisApplication | NaisOther | NaisTopic)[],
-    [env, filename]: GithubDeducedEnvironmentNaisFileTuple,
+    [env, filename, repoUrl]: GithubDeducedEnvironmentNaisFileTuple,
 ): AppMetadata | TopicMetadata | null {
     const naisApp =
         naiserators.find((app) => filename === app.filename) ??
@@ -85,8 +84,8 @@ function createAppMetadataForEnv(
         } satisfies TopicMetadata
     }
 
+    // Must be an application
     const { application } = naisApp
-
     return {
         type: 'app',
         app: application.metadata.name,
@@ -97,6 +96,7 @@ function createAppMetadataForEnv(
                 name: it.name ?? application.metadata.name,
                 databases: it.databases?.map((db) => db.name) ?? [],
             })) ?? null,
+        repoUrl,
         dependencies: createApplicationDependencies(application.spec.accessPolicy),
     } satisfies AppMetadata
 }
