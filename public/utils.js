@@ -20,6 +20,5 @@ export function updateUrl(options) {
 }
 
 export function getCluster(name) {
-    console.log('cluster', name, window.graph[name])
     return window.graph[name]
 }

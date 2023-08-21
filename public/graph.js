@@ -142,7 +142,8 @@ initializeGraph(defaultOptions)
 network.on('click', function (params) {
     const node = document.getElementById('focus-info')
     if (params.nodes.length > 0) {
-        const app = getCluster(defaultOptions).applications.find((it) => `${it.app}-app` === params.nodes[0])
+        const cluster = getCluster(defaultOptions.cluster)
+        const app = cluster.applications.find((it) => `${it.app}-app` === params.nodes[0])
         node.setAttribute('data-focused', 'true')
         node.innerHTML = `
         <pre>${params.nodes}</pre>

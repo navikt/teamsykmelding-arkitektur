@@ -103,7 +103,7 @@ export function getOtherTeamAppNodes(applications, topics, options, toggleMetada
         [...otherAppDeps, ...otherTopicDeps],
         R.uniqBy((it) => it.application),
         R.map((it) => {
-            const clusterLine = it.cluster !== options.cluster ? `\n${it.cluster}` : ''
+            const clusterLine = 'cluster' in it && it.cluster !== options.cluster ? `\n${it.cluster}` : ''
             return {
                 id: `${it.application}-app`,
                 label: `${namespaceToEmoji(it.namespace)} ${it.namespace}${clusterLine}\n${it.application}`,
@@ -218,6 +218,12 @@ function namespaceToEmoji(namespace) {
             return '💪'
         case 'team-esyfo':
             return '🫂'
+        case 'risk':
+            return '☣️'
+        case 'teamsykefravr':
+            return '🏥'
+        case 'personbruker':
+            return '🧑🏽'
         default:
             console.log('Uknonwn namespace', namespace)
             return ''
