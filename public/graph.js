@@ -152,7 +152,8 @@ network.on('click', function (params) {
         node.setAttribute('data-focused', 'true')
         node.innerHTML = `
         <pre>${params.nodes}</pre>
-        ${metadata ? `<a href="${metadata.repoUrl}" target="_blank">Github</a>` : ''}
+        ${metadata?.repoUrl ? `<a href="${metadata.repoUrl}" target="_blank">Github (repo)</a>` : ''}
+        ${metadata?.fileUrl ? `<a href="${metadata.fileUrl}" target="_blank">Github (topic file)</a>` : ''}
         ${app ? `<pre>${JSON.stringify(app, null, 2)}</pre>` : ''}
       `
     } else {

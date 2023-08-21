@@ -81,6 +81,7 @@ function createAppMetadataForEnv(
             topic: naisApp.topic.metadata.name,
             namespace: naisApp.topic.metadata.namespace,
             dependencies: createTopicDependencies(naisApp.topic.spec),
+            fileUrl: `${repoUrl}/tree/main/${filename}`,
         } satisfies TopicMetadata
     }
 

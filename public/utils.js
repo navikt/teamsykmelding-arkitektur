@@ -36,6 +36,9 @@ export function createAppMetadataMap() {
         cluster.applications.forEach((app) => {
             map.set(`${app.app}-app`, { repoUrl: app.repoUrl })
         })
+        cluster.topics.forEach((topic) => {
+            map.set(`${topic.topic}-topic`, { fileUrl: topic.fileUrl })
+        })
     })
 
     return map
