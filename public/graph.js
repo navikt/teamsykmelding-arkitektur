@@ -45,52 +45,52 @@ const baseUsers = [
     { id: 'internal-user', label: 'Intern bruker', group: 'internalUser' },
 ]
 
-async function updateGraph(options) {
+async function initializeGraph(options) {
     nodes.clear()
     edges.clear()
 
-    nodes.add(baseUsers)
+    const batchedNodes = [...baseUsers]
+    const batchedEdges = []
 
     const teamSykmeldingAppNodes = getTeamSykmeldingAppNodes(cluster.applications, options)
     const appIngressEdges = getAppIngressEdges(cluster.applications)
     const databaseToAppEdges = getDatabaseToAppEdges(teamSykmeldingAppNodes)
 
-    nodes.add(teamSykmeldingAppNodes)
-    edges.add(databaseToAppEdges)
-    edges.add(appIngressEdges)
-
-    await wait(500)
+    batchedNodes.push(...teamSykmeldingAppNodes)
+    batchedEdges.push(...databaseToAppEdges)
+    batchedEdges.push(...appIngressEdges)
 
     if (options.showKafka) {
         const teamSykmeldingTopicNodes = getTeamsykmeldingKafkaTopicNodes(cluster.topics)
 
         toggleMetadata.kafkaIds.nodes.push(...teamSykmeldingTopicNodes.map((it) => it.id))
 
-        nodes.add(teamSykmeldingTopicNodes)
-        await wait(500)
+        batchedNodes.push(...teamSykmeldingTopicNodes)
     }
 
     const otherAppNodes = getOtherTeamAppNodes(cluster.applications, cluster.topics, options, toggleMetadata)
-    nodes.add(otherAppNodes)
-    await wait(500)
+    batchedNodes.push(...otherAppNodes)
 
     if (options.showExternal) {
         const externalNodes = getExternalNodes(cluster.applications)
 
         toggleMetadata.externalIds.nodes = externalNodes.map((it) => it.id)
 
-        nodes.add(externalNodes)
-        await wait(500)
+        batchedNodes.push(...externalNodes)
     }
 
     const accessPolicyEdges = getAccessPolicyEdges(cluster.applications)
-    edges.add(accessPolicyEdges)
-    await wait(1500)
+    batchedEdges.push(...accessPolicyEdges)
 
     const topicEdges = getTopicEdges(cluster.topics)
 
-    edges.add(topicEdges)
+    batchedEdges.push(...topicEdges)
+
+    nodes.add(batchedNodes)
+    edges.add(batchedEdges)
+
     await wait(500)
+    network.fit({ animation: true })
 }
 
 const network = new vis.Network(
@@ -131,10 +131,13 @@ const network = new vis.Network(
                 },
             },
         },
+        physics: {
+            solver: 'forceAtlas2Based',
+        },
     },
 )
 
-updateGraph(defaultOptions)
+initializeGraph(defaultOptions)
 
 network.on('click', function (params) {
     console.log(params)
@@ -161,7 +164,7 @@ document.getElementById('show-kafka').addEventListener('click', (event) => {
         toggleMetadata.kafkaIds.nodes = []
     } else {
         setButtonDisabledness(true)
-        updateGraph(defaultOptions).finally(() => setButtonDisabledness(false))
+        initializeGraph(defaultOptions).finally(() => setButtonDisabledness(false))
     }
 })
 
@@ -173,8 +176,11 @@ document.getElementById('show-external').addEventListener('click', (event) => {
         nodes.remove(toggleMetadata.externalIds.nodes)
         toggleMetadata.externalIds.nodes = []
     } else {
-        setButtonDisabledness(true)
-        updateGraph(defaultOptions).finally(() => setButtonDisabledness(false))
+        const externalNodes = getExternalNodes(cluster.applications)
+
+        toggleMetadata.externalIds.nodes = externalNodes.map((it) => it.id)
+
+        nodes.add(externalNodes)
     }
 })
 
