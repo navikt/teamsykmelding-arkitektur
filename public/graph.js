@@ -176,7 +176,7 @@ document.getElementById('show-external').addEventListener('click', (event) => {
         nodes.remove(toggleMetadata.externalIds.nodes)
         toggleMetadata.externalIds.nodes = []
     } else {
-        const externalNodes = getExternalNodes(getCluster(defaultOptions).applications)
+        const externalNodes = getExternalNodes(getCluster(defaultOptions.cluster).applications)
 
         toggleMetadata.externalIds.nodes = externalNodes.map((it) => it.id)
 
@@ -191,7 +191,7 @@ document.getElementById('show-macgyver').addEventListener('click', (event) => {
     if (!defaultOptions.showMacgyver) {
         nodes.remove(['macgyver-frontend-app', 'macgyver-app'])
     } else {
-        nodes.add(createMacgyverNodes(getCluster(defaultOptions).applications))
+        nodes.add(createMacgyverNodes(getCluster(defaultOptions.cluster).applications))
     }
 })
 
