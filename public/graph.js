@@ -79,7 +79,7 @@ async function initializeGraph(options) {
         batchedNodes.push(...externalNodes)
     }
 
-    const accessPolicyEdges = getAccessPolicyEdges(cluster.applications)
+    const accessPolicyEdges = getAccessPolicyEdges(cluster.applications, options)
     batchedEdges.push(...accessPolicyEdges)
 
     const topicEdges = getTopicEdges(cluster.topics)

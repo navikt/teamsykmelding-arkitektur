@@ -102,16 +102,19 @@ export function getOtherTeamAppNodes(applications, topics, options, toggleMetada
     return R.pipe(
         [...otherAppDeps, ...otherTopicDeps],
         R.uniqBy((it) => it.application),
-        R.map((it) => ({
-            id: `${it.application}-app`,
-            label: `${namespaceToEmoji(it.namespace)} ${it.namespace}\n${it.application}`,
-            group: it.namespace,
-            shape: 'box',
-            font: {
-                face: 'monospace',
-                align: 'left',
-            },
-        })),
+        R.map((it) => {
+            const clusterLine = it.cluster !== options.cluster ? `\n${it.cluster}` : ''
+            return {
+                id: `${it.application}-app`,
+                label: `${namespaceToEmoji(it.namespace)} ${it.namespace}${clusterLine}\n${it.application}`,
+                group: it.namespace,
+                shape: 'box',
+                font: {
+                    face: 'monospace',
+                    align: 'left',
+                },
+            }
+        }),
     )
 }
 
@@ -131,7 +134,7 @@ export function getExternalNodes(applications) {
     )
 }
 
-export function getAccessPolicyEdges(applications) {
+export function getAccessPolicyEdges(applications, options) {
     const rawEdges = R.pipe(
         applications,
         R.filter((it) => it.dependencies),
@@ -139,6 +142,7 @@ export function getAccessPolicyEdges(applications) {
             ...app.dependencies.inbound.map((it) => ({
                 to: `${app.app}-app`,
                 from: `${it.application}-app`,
+                label: it.cluster !== options.cluster ? it.cluster : undefined,
                 arrows: { to: { enabled: true } },
             })),
             ...app.dependencies.outbound.map((it) => {
