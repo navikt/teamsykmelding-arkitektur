@@ -117,7 +117,6 @@ const network = new vis.Network(
             user: {
                 shape: 'icon',
                 icon: {
-                    face: "'FontAwesome'",
                     code: '\uf0c0',
                     size: 50,
                     color: '#3694ff',
@@ -126,7 +125,6 @@ const network = new vis.Network(
             internalUser: {
                 shape: 'icon',
                 icon: {
-                    face: "'FontAwesome'",
                     code: '\uf0c0',
                     size: 50,
                     color: '#ff5a5a',
