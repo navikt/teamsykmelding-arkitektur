@@ -1,7 +1,5 @@
 import { getRepositories } from './github/repos'
 import { cloneOrPull, readCacheMetadata, updateCacheMetadata } from './git/cloner'
-import { buildMermaid } from './mermaid/build.ts'
-import { writeMermaid } from './mermaid/write.ts'
 import { buildDependencyGraph } from './dependency-graph/build.ts'
 import server from './server'
 
@@ -21,9 +19,6 @@ if (gitArg) {
     console.info(`Not fetching git, last updated ${new Date(metadata.timestamp).toISOString()}`)
 }
 
-const dependencyGraph = await buildDependencyGraph({ cache: cacheArg })
-const mermaid = buildMermaid(dependencyGraph['prod-gcp'])
-
-await writeMermaid(mermaid, 'graph.md')
+await buildDependencyGraph({ cache: cacheArg })
 
 export default server
