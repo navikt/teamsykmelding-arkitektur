@@ -138,6 +138,18 @@ export function getExternalNodes(applications) {
 }
 
 export function getAccessPolicyEdges(applications, options) {
+    const externalEdges = R.pipe(
+        applications,
+        R.filter((it) => it.dependencies?.external.length > 0),
+        R.flatMap((app) =>
+            app.dependencies.external.map((it) => ({
+                to: `${app.app}-app`,
+                from: `${it.host}-app`,
+                arrows: { from: { enabled: true } },
+            })),
+        ),
+    )
+
     const rawEdges = R.pipe(
         applications,
         R.filter((it) => it.dependencies),
@@ -155,13 +167,6 @@ export function getAccessPolicyEdges(applications, options) {
                     arrows: { to: { enabled: true } },
                 }
             }),
-            ...app.dependencies.external.map((it) => {
-                return {
-                    to: `${app.app}-app`,
-                    from: `${it.host}-app`,
-                    arrows: { from: { enabled: true } },
-                }
-            }),
         ]),
     )
 
@@ -173,13 +178,16 @@ export function getAccessPolicyEdges(applications, options) {
     )
 
     return [
-        ...simplexEdges.flatMap(([, edges]) => edges),
+        ...simplexEdges
+            .flatMap(([, edges]) => edges)
+            .map((it) => ({ ...it, width: 1, dashes: true, color: '#ff00fb' })),
         ...duplexEdges.map(([, edges]) => ({
             to: edges[0].to,
             from: edges[0].from,
-            arrows: { to: { enabled: true }, color: 'red' },
+            arrows: { to: { enabled: true } },
             width: 3,
         })),
+        ...externalEdges,
     ]
 }
 
