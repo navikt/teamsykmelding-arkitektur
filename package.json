@@ -16,7 +16,7 @@
         "simple-git": "^3.19.1"
     },
     "devDependencies": {
-        "@navikt/eslint-config-teamsykmelding": "^5.0.0",
+        "@navikt/eslint-config-teamsykmelding": "^6.2.0",
         "@types/js-yaml": "^4.0.5",
         "bun-types": "latest",
         "prettier": "^3.0.1"
