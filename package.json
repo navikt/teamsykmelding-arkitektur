@@ -12,7 +12,7 @@
         "glob": "^10.3.3",
         "js-yaml": "^4.1.0",
         "octokit": "^3.1.0",
-        "remeda": "^1.24.0",
+        "remeda": "^2.0.0",
         "simple-git": "^3.19.1"
     },
     "devDependencies": {
