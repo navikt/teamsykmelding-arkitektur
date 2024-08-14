@@ -42,7 +42,7 @@ function createApplicationMetadata(relevantFiles: WorkingFiles[]): [string, AppM
         environments,
         R.map((env) => [env[0], createAppMetadataForEnv([...napsApps, ...naisJobs, ...naisTopics], env)]),
         R.filter((tuple): tuple is [string, AppMetadata | TopicMetadata] => tuple[1] != null),
-        R.uniqBy(([env, metadata]) =>
+        R.uniqueBy(([env, metadata]) =>
             metadata.type === 'app'
                 ? `${metadata.namespace}-${env}-${metadata.app}`
                 : `${metadata.namespace}-${env}-${metadata.topic}`,

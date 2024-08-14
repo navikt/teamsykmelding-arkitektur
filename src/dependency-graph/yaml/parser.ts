@@ -1,5 +1,5 @@
 import { load } from 'js-yaml'
-import { compact } from 'remeda'
+import { isTruthy, filter } from 'remeda'
 
 import { NaisSchema } from './schemas/nais-schema.ts'
 import { GithubActionsSchema } from './schemas/gha-schema.ts'
@@ -45,7 +45,7 @@ export const parseYaml =
         const content = await Bun.file(file).text()
 
         return await Promise.all(
-            compact(content.split('---')).map((section) => parseYamlDocument(absoluteRepoPath, file, section)),
+            filter(content.split('---'), isTruthy).map((section) => parseYamlDocument(absoluteRepoPath, file, section)),
         )
     }
 

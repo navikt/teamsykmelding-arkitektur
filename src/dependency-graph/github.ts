@@ -24,11 +24,15 @@ export function getEnvironmentNaisTuple(
             ]
         }
 
-        if (firstJob.uses.includes('jar-app.yaml')) {
+        if (firstJob.uses.includes('jar-app.yaml') || firstJob.uses.includes('jar-app-21.yaml')) {
             return [
                 ['dev-gcp', 'naiserator-dev.yaml', repoUrl],
                 ['prod-gcp', 'naiserator-prod.yaml', repoUrl],
             ]
+        }
+
+        if (firstJob.uses.includes('merge-dependabot-pr.yaml')) {
+            return []
         }
 
         raise(`Unknown shared workflow: ${firstJob.uses}`)

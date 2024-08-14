@@ -9,17 +9,17 @@
         "start": "bun run src/index.ts"
     },
     "dependencies": {
-        "glob": "^10.3.3",
+        "glob": "^11.0.0",
         "js-yaml": "^4.1.0",
-        "octokit": "^3.1.0",
-        "remeda": "^1.24.0",
-        "simple-git": "^3.19.1"
+        "octokit": "^4.0.2",
+        "remeda": "^2.11.0",
+        "simple-git": "^3.25.0"
     },
     "devDependencies": {
-        "@navikt/eslint-config-teamsykmelding": "^5.0.0",
-        "@types/js-yaml": "^4.0.5",
+        "@navikt/eslint-config-teamsykmelding": "^6.5.0",
+        "@types/js-yaml": "^4.0.9",
         "bun-types": "latest",
-        "prettier": "^3.0.1"
+        "prettier": "^3.3.3"
     },
     "peerDependencies": {
         "typescript": "^5.1.6"
