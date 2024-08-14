@@ -6,7 +6,8 @@
         "dev": "bun run --watch src/index.ts",
         "prebuild": "bun run src/prebuild-cache.ts",
         "server-only": "bun run src/server/index.ts",
-        "start": "bun run src/index.ts"
+        "start": "bun run src/index.ts",
+        "build:server": "bun build --compile src/server/index.ts --outfile dist/server"
     },
     "dependencies": {
         "glob": "^11.0.0",

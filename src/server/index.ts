@@ -5,6 +5,8 @@ import { devModeBrowserScript, devModeMessageHandler } from './dev-mode.ts'
 
 const graphFile = await getCachedDependencyGraphFile()
 
+console.info("Loaded graph file, starting server...")
+
 export default {
     async fetch(req, server) {
         const url = new URL(req.url)

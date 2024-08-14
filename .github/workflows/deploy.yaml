@@ -23,6 +23,7 @@ jobs:
       - uses: oven-sh/setup-bun@v1
       - run: bun install --frozen-lockfile
       - run: bun run prebuild
+      - run: bun run build:server
       - name: Push docker image to GAR
         uses: nais/docker-build-push@v0
         id: docker-build-push
