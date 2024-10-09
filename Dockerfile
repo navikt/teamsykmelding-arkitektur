@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/base
+FROM gcr.io/distroless/base-nossl-debian12
 
 COPY dist/server /
 COPY .cache/graph.json /.cache/
